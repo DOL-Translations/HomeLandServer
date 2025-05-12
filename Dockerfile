@@ -22,7 +22,7 @@ WORKDIR /srv/src/Fragment.NetSlum.Console
 RUN dotnet publish Fragment.NetSlum.Console.csproj -c Release --runtime linux-x64 -o /app/console --self-contained
 
 FROM base AS final
-EXPOSE 49000
+EXPOSE 12417
 
 WORKDIR /app
 COPY --from=publish /app .

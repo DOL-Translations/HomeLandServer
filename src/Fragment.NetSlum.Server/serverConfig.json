@@ -32,6 +32,6 @@
   },
   "TcpServer": {
     "IpAddress": "0.0.0.0",
-    "Port": 49000
+    "Port": 12417
   }
 }

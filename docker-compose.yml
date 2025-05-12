@@ -13,7 +13,7 @@ services:
             context: .
             target: final
         ports:
-            - '49000:49000' #Game Server
+            - '12417:12417' #Game Server
             - '5000:5000'   #API
         environment:
             - ASPNETCORE_URLS=http://+:5000

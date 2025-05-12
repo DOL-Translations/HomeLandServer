@@ -10,7 +10,7 @@ public class TcpServerOptions
     /// <summary>
     /// The port the server should listen on
     /// </summary>
-    public int Port { get; set; } = 49000;
+    public int Port { get; set; } = 12417;
 
     /// <summary>
     /// The number of seconds in which a session will be considered timed-out
