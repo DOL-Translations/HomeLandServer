@@ -9,7 +9,7 @@ namespace Fragment.NetSlum.Networking.Crypto;
 
 public class BlowfishProvider
 {
-    private const string DefaultKey = "hackOnline";
+    private const string DefaultKey = "abcdefgh";
 
     private byte[] _secretKey;
     private uint SecretKeyLength => (uint)(_secretKey?.Length ?? 0);

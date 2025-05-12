@@ -15,7 +15,7 @@ public class TcpServerOptions
     /// <summary>
     /// The number of seconds in which a session will be considered timed-out
     /// </summary>
-    public int SessionTimeout { get; set; } = 60;
+    public int SessionTimeout { get; set; } = 120;
 
     /// <summary>
     /// Manual mode will cause all sessions to block sending data until their respective Flush() methods are called.
