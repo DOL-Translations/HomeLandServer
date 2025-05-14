@@ -20,6 +20,12 @@ public enum OpCodes : ushort
     LobbyUserEnterName = 0x4,
     LobbyUserEnterGreeting = 0x5,
 
+    //HOMELAND PACKETS - 0x20xx
+    HL2009Request = 0x2009,
+    HL2009Response = 0x200A,
+
+
+
     //MISC_DEFINES
     ClientTypeGame = 0x7430,
     ClientTypeAreaServer = 0x7431,

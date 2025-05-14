@@ -68,6 +68,7 @@ public class FragmentFrameDecoder : IPacketDecoder
         var ok = _cryptoHandler.TryDecrypt(messageContent.ToArray(), out var decrypted);
 
         Log.Information("[CRYPTO] Decrypt Result: {Result}", ok ? "OK" : "FAIL");
+        Log.Information("[CRYPTO] Message Type: {Type}", messageType);
         Log.Information("[CRYPTO] Decrypt Data: {Data}", decrypted.ToHexDump());
 
         var dataPacketType = OpCodes.None;
