@@ -23,6 +23,7 @@ RUN dotnet publish Fragment.NetSlum.Console.csproj -c Release --runtime linux-x6
 
 FROM base AS final
 EXPOSE 12417
+EXPOSE 5000
 
 WORKDIR /app
 COPY --from=publish /app .

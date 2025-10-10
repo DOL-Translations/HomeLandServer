@@ -21,10 +21,31 @@ public enum OpCodes : ushort
     LobbyUserEnterGreeting = 0x5,
 
     //HOMELAND PACKETS - 0x20xx
+    HL2005Response = 0x2005,
+    HL2007Response = 0x2007,
     HL2009Request = 0x2009,
-    HL2009Response = 0x200A,
+    HL2009Response = 0x200A, //fake, don't use
+    HL2011Response = 0x2011,
 
+    AccountInfo = 0x2000,
+    HomeLandInfo = 0x2001,
+    HomeLandSearch = 0x2002,
+    HomeLandSearchResultCnt = 0x2003,
+    HomeLandSearchResult = 0x2004,
+    HomeLandUserCnt = 0x2005,
+    HomeLandDestroy = 0x2006,
+    HomeLandGetIp = 0x2007,
+    HomeLandGetPendingWithdraws = 0x2008,
+    // = 0x200F,
+    Echo = 0x2010,
+    // = 0x2011,
+    HL2012Request = 0x2012,
+    PlayerWithdrawFromHomeLand = 0x2013,
+    FirewallCheck = 0x2014, //might be the reponse that the server is online
+    HomeLandPlayerJoined = 0x2015,
+    HomeLandChangeComment = 0x201B,
 
+    HomeLandUrgentAnnouncement = 0x701D,
 
     //MISC_DEFINES
     ClientTypeGame = 0x7430,
