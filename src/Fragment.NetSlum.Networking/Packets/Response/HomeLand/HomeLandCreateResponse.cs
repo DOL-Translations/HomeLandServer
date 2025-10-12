@@ -7,8 +7,10 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
-    public class FirewallCheckResponse : BaseResponse
+    public class HomeLandCreateResponse : BaseResponse
     {
+        private OpCodes _responseCode;
+
         public override FragmentMessage Build()
         {
             byte error = 0x00; //0x00 for no error
@@ -18,7 +20,7 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             return new FragmentMessage
             {
                 MessageType = MessageType.Data,
-                DataPacketType = OpCodes.FirewallCheck,
+                DataPacketType = OpCodes.HomeLandCreate,
                 Data = writer.Buffer,
             };
         }

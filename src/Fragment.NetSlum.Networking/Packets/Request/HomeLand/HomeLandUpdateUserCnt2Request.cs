@@ -9,18 +9,11 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
-[FragmentPacket(MessageType.Data, OpCodes.AccountInfo)]
-public class AccountInfoRequest : BaseRequest
+[FragmentPacket(MessageType.Data, OpCodes.HomeLandUpdateUserCnt2)]
+public class HomeLandUpdateUserCnt2Request : BaseRequest
 {
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-        var responses = new List<FragmentMessage>
-        {
-            new AccountInfoResponse().Build(),
-            new EchoResponse().Build(),
-            new UrgentAnnouncementResponse().Build(),
-        };
-
-        return new ValueTask<ICollection<FragmentMessage>>(responses);
+        return SingleMessage(new HomeLandUpdateUserCnt2Response().Build());
     }
 }

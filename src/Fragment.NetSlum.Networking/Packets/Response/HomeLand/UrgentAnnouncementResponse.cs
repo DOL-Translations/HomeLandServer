@@ -7,18 +7,25 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
-    public class FirewallCheckResponse : BaseResponse
+    public class UrgentAnnouncementResponse : BaseResponse
     {
+        private string _message = "Sample Message\nfrom the server :)";
+
+        public void SetMessage(string message)
+        {
+            _message = message;
+        }
+
         public override FragmentMessage Build()
         {
-            byte error = 0x00; //0x00 for no error
-            var writer = new MemoryWriter(1);
-            writer.Write(error);
+            var messageBytes = _message.ToShiftJis();
+            var writer = new MemoryWriter(messageBytes.Length + 1);
+            writer.Write(messageBytes);
 
             return new FragmentMessage
             {
                 MessageType = MessageType.Data,
-                DataPacketType = OpCodes.FirewallCheck,
+                DataPacketType = OpCodes.UrgentAnnouncement,
                 Data = writer.Buffer,
             };
         }
