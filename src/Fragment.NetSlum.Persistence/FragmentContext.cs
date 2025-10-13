@@ -47,11 +47,13 @@ public class FragmentContext : DbContext
             method.Invoke(eInstance, [entityBuilderObject]);
         }
     }
+    //HomeLand
+    public virtual DbSet<PlayerAccount> PlayerAccounts { get; set; }
+    public virtual DbSet<HomeLandEntity> HomeLands { get; set; }
 
     public virtual DbSet<Character> Characters { get; set; }
     public virtual DbSet<CharacterStats> CharacterStats { get; set; }
     public virtual DbSet<CharacterIpLog> CharacterIpLogs { get; set; }
-    public virtual DbSet<PlayerAccount> PlayerAccounts { get; set; }
     public virtual DbSet<CharacterStatHistory> CharacterStatHistory { get; set; }
     public virtual DbSet<ServerNews> ServerNews { get; set; }
     public virtual DbSet<WebNewsCategory> WebNewsCategories { get; set; }

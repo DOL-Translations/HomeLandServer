@@ -32,11 +32,14 @@ public class Character : IConfigurableEntity<Character>
     public string SaveId { get; set; } = default!;
     public byte SaveSlotId { get; set; }
 
+    //remove
     public required int CurrentLevel { get; set; }
 
+    //remove
     public required uint FullModelId { get; set; }
     public required CharacterClass Class { get; set; }
 
+    //remove
     public ushort? GuildId { get; set; }
     public Guild? Guild { get; set; }
 

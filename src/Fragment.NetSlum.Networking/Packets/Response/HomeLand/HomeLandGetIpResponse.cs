@@ -7,29 +7,28 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
-    public class HomeLandSearchResponse : BaseResponse
+    public class HomeLandGetIpResponse : BaseResponse
     {
-        private byte _searchResultCnt = 0;
+        private uint _ipAddress = 0;
 
-        public HomeLandSearchResponse SetResultCnt(byte searchResultCnt)
+        public HomeLandGetIpResponse SetIpAddress(uint ipAddress)
         {
-            _searchResultCnt = searchResultCnt;
+            _ipAddress = ipAddress;
             return this;
         }
 
         public override FragmentMessage Build()
         {
             byte error = 0x00; //0x00 for no error
-            uint unk = 0x00; //unknown
+            //if (_ipAddress == 0) { error = 0x17; }
             var writer = new MemoryWriter(8);
             writer.Write(error);
-            writer.Write(_searchResultCnt);
-            writer.Write(unk);
+            writer.Write(_ipAddress);
 
             return new FragmentMessage
             {
                 MessageType = MessageType.Data,
-                DataPacketType = OpCodes.HomeLandSearchResultCnt,
+                DataPacketType = OpCodes.HomeLandGetIp,
                 Data = writer.Buffer,
             };
         }

@@ -9,13 +9,18 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class AccountInfoResponse : BaseResponse
     {
-        private OpCodes _responseCode;
+        private int _accountId = 1; //placeholder
+
+        public AccountInfoResponse SetAccountId(int id)
+        {
+            _accountId = id;
+            return this;
+        }
 
         public override FragmentMessage Build()
         {
             byte error = 0x00; //0x00 for no error
-            int acctId = 0x1; //Account ID
-
+            
             //byte[] unk1 = new byte[16]; //Unknown
             int test1 = 0x00;
             int test2 = 0x00;
@@ -35,7 +40,7 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             var writer = new MemoryWriter(40);
 
             writer.Write(error);
-            writer.Write(acctId);
+            writer.Write(_accountId);
             //writer.Write(unk1.AsMemory());
             writer.Write(test1);
             writer.Write(test2);

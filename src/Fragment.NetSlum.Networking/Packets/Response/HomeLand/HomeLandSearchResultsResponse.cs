@@ -2,6 +2,8 @@ using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Core.Extensions;
 using Fragment.NetSlum.Networking.Constants;
 using Fragment.NetSlum.Networking.Objects;
+using Fragment.NetSlum.Persistence;
+using Fragment.NetSlum.Persistence.Entities;
 using System;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
@@ -9,36 +11,34 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class HomeLandSearchResultsResponse : BaseResponse
     {
-        private OpCodes _responseCode;
+        private HomeLandEntity _homeland;
 
-        private uint _homelandId = 1; //placeholder
-
-        public void SetHomeLandId(uint homelandId)
+        public HomeLandSearchResultsResponse SetHomeLand(HomeLandEntity homeland)
         {
-            _homelandId = homelandId;
+            _homeland = homeland;
+            return this;
         }
 
         public override FragmentMessage Build()
         {
-            //placeholder
-            uint homelandId = _homelandId;
-            uint ip = 0x00;
-            uint nameLen = 12;
-            string name = "Test server"; //Max 12
+            uint homelandId = _homeland.HomeLandId;
+            uint ip = _homeland.LocalIp;
+            uint nameLen = (uint)_homeland.HomeLandName.Length;
+            string name = _homeland.HomeLandName; //Max 16
             ushort unk = 0;
-            ushort location = 2936; //North America
-            uint time = 0; //Elapsed?
-            uint passwordLen = 0;
-            string password = ""; //Max 16
-            uint commentLen = 23;
-            string comment = "this is a test comment"; //Max 256
-            sbyte registeredPlayerCnt = 0;
-            sbyte maxPlayerCnt = 0;
-            uint clearCnt = 0;
-            byte isMostRecent = 0;
-            ushort latency = 0;
+            ushort location = _homeland.Location; //2936; //North America
+            uint time = _homeland.Time; //Elapsed?
+            uint passwordLen = (uint)_homeland.Password.Length;
+            string password = _homeland.Password; //Max 16
+            uint commentLen = (uint)_homeland.Comment.Length;
+            string comment = _homeland.Comment; //Max 256
+            sbyte registeredPlayerCnt = _homeland.RegisteredPlayerCnt;
+            sbyte maxPlayerCnt = _homeland.MaxPlayerCnt;
+            uint clearCnt = _homeland.ClearCnt;
+            byte isMostRecent = _homeland.IsMostRecent;
+            ushort latency = _homeland.Latency;
 
-            var writer = new MemoryWriter(37 + 12 + 0 + 23);
+            var writer = new MemoryWriter(40 + (int)nameLen + (int)passwordLen + (int)commentLen);
             writer.Write(homelandId);
             writer.Write(ip);
             writer.Write(nameLen);

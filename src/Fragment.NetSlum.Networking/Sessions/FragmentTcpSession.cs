@@ -14,6 +14,7 @@ using Fragment.NetSlum.Networking.Stores;
 using Fragment.NetSlum.TcpServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Fragment.NetSlum.Persistence.Entities;
 
 namespace Fragment.NetSlum.Networking.Sessions;
 
@@ -54,6 +55,11 @@ public class FragmentTcpSession : TcpSession, IScopeable
     /// The active "save" ID that is associated to this session
     /// </summary>
     public int PlayerAccountId { get; set; }
+
+    /// <summary>
+    /// The active HomeLand tied to the player associated to this session
+    /// </summary>
+    public HomeLandEntity? HomeLand { get; set; }
 
     /// <summary>
     /// The character reference that belongs to this session

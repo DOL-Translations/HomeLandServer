@@ -8,17 +8,21 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Fragment.NetSlum.Persistence.Entities;
 
-public class HomeLand : IConfigurableEntity<HomeLand>
+public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
 {
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public uint HomeLandId { get; set; }
 
-    public uint ExternalIp { get; set; }
+    public uint LocalIp { get; set; }
     
     [MySqlCharSet("cp932")]
     [MySqlCollation("cp932_japanese_ci")]
     public required string HomeLandName { get; set; }
+
+    public ushort Location { get; set; } //Country code
+
+    public byte Time { get; set; } //Elapsed time?
 
     [MySqlCharSet("cp932")]
     [MySqlCollation("cp932_japanese_ci")]
@@ -28,17 +32,17 @@ public class HomeLand : IConfigurableEntity<HomeLand>
     [MySqlCollation("cp932_japanese_ci")]
     public required string Comment { get; set; }
 
-    public sbyte RegisteredPlayerCount { get; set; }
+    public sbyte RegisteredPlayerCnt { get; set; }
 
-    public sbyte MaxPlayerCount { get; set; }
+    public sbyte MaxPlayerCnt { get; set; }
 
-    public uint ClearCount { get; set; }
+    public uint ClearCnt { get; set; }
 
     public byte IsMostRecent { get; set; }
 
     public ushort Latency { get; set; } //move somewhere else?
 
-    void IConfigurableEntity<HomeLand>.Configure(EntityTypeBuilder<HomeLand> entityBuilder)
+    void IConfigurableEntity<HomeLandEntity>.Configure(EntityTypeBuilder<HomeLandEntity> entityBuilder)
     {
     }
 }
