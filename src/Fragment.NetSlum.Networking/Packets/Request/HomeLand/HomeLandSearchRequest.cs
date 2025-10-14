@@ -49,9 +49,9 @@ public class HomeLandSearchRequest : BaseRequest
         byte hasPassword = request.Data.Span[counter++];
         byte order = request.Data.Span[counter++];
 
-        var homelands = _database.HomeLands.ToList();
+        List<HomeLandEntity> homelands = _database.HomeLands.ToList();
 
-        foreach (var homeland in homelands)
+        /*foreach (var homeland in homelands)
         {
             //Filter by location. If distance is 0, ignore location.
             //Ignore if search is 5000 (Worldwide), or is 2933 (Asia) and HL is <= 2932 (Japan)
@@ -116,11 +116,11 @@ public class HomeLandSearchRequest : BaseRequest
             3 => homelands.OrderBy(h => h.Time).ToList(),
             4 => homelands.OrderByDescending(h => h.ClearCnt).ToList(),
             _ => homelands
-        };
+        };*/
 
         var responses = new List<FragmentMessage>();
         responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)homelands.Count).Build());
-        foreach (var homeland in homelands)
+        foreach (HomeLandEntity homeland in homelands)
         {
             responses.Add(new HomeLandSearchResultsResponse().SetHomeLand(homeland).Build());
         }

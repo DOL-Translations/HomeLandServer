@@ -28,16 +28,15 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             int test4 = 0x00;
 
             byte unk2 = 0x00; //Unknown
-            byte msgType = 0x00;
-            int msg1Len = 0x0;
-            //string msg1 = "Welcome to HomeLand!";
-            char msg1 = 'A';
+            byte msgType = 0x02;
+            string msg1 = "Welcome to the HomeLand matching server beta test!\nRemember to report bugs :)";
+            int msg1Len = msg1.Length;
             int terminate = 0x0;
             int msg2Len = 0x0;
             //string msg2 = "test";
-            char msg2 = 'B';
-            //var writer = new MemoryWriter(31 + msg1Len + msg2Len);
-            var writer = new MemoryWriter(40);
+            char msg2 = 'B'; //homeland game code
+            var writer = new MemoryWriter(40 + msg1Len + msg2Len);
+            //var writer = new MemoryWriter(40);
 
             writer.Write(error);
             writer.Write(_accountId);
@@ -51,6 +50,8 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             writer.Write(msg1Len);
             //writer.Write(System.Text.Encoding.UTF8.GetBytes(msg1).AsSpan());
             //writer.Write(msg1);
+            byte[] msg1Bytes = System.Text.Encoding.UTF8.GetBytes(msg1);
+            writer.Write(msg1Bytes.AsSpan());
             writer.Write(terminate);
             writer.Write(msg2Len);
             //writer.Write(System.Text.Encoding.UTF8.GetBytes(msg2).AsSpan());

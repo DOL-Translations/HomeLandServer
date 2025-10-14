@@ -44,7 +44,7 @@ public enum OpCodes : ushort
     PlayerWithdrawFromHomeLand = 0x2013,
     FirewallCheck = 0x2014,
     HomeLandPlayerJoined = 0x2015,
-    HomeLandChangeComment = 0x201B,
+    HomeLandUpdateComment = 0x201B,
 
     UrgentAnnouncement = 0x701D,
 

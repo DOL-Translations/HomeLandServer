@@ -90,6 +90,7 @@ public class HomeLandCreateRequest : BaseRequest
             };
             _database.HomeLands.Add(homeland);
         }
+        _database.SaveChanges();
 
         session.HomeLand = homeland;
 
