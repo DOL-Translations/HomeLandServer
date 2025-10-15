@@ -26,6 +26,10 @@ public class HomeLandDestroyRequest : BaseRequest
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
         var homeland = session.HomeLand;
+        if (homeland == null)
+        {
+            homeland = _database.HomeLands.FirstOrDefault(h => h.HomeLandId == session.PlayerAccountId);
+        }
         if (homeland != null)
         {
             _database.HomeLands.Remove(homeland);

@@ -22,7 +22,11 @@ public class FragmentContext : DbContext
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
         // Use snake_cased table/column names to keep things consistent with the old database layout
+        var connString = Environment.GetEnvironmentVariable("ConnectionStrings__Database")
+            ?? "server=localhost;port=3306;database=fragment_redux;user=root;password=d3ve10pm3nt;";
+
         optionsBuilder
+            .UseMySql(connString, ServerVersion.AutoDetect(connString))
             .UseSnakeCaseNamingConvention();
 
         #if (DEBUG)

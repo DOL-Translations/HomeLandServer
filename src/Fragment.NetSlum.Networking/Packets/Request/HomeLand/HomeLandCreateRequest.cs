@@ -1,6 +1,7 @@
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Core.Extensions;
 using Fragment.NetSlum.Networking.Attributes;
 using Fragment.NetSlum.Networking.Constants;
@@ -41,33 +42,28 @@ public class HomeLandCreateRequest : BaseRequest
 	        byte Unk2; //Either 6 or 2, depending on some variable.
         }
         */
-        var counter = 0;
 
-        byte unk1 = request.Data.Span[counter++];
-        var localIp = System.BitConverter.ToUInt32(request.Data.Span.Slice(counter, 4));
-        counter += 4;
-        var name = request.Data.Span.Slice(counter).ToShiftJisString();
-        counter += name.Length + 1;
-        var location = System.BitConverter.ToUInt16(request.Data.Span.Slice(counter, 2));
-        counter += 2;
-        byte time = request.Data.Span[counter++];
-        var password = request.Data.Span.Slice(counter).ToShiftJisString();
-        counter += password.Length + 1;
-        var comment = request.Data.Span.Slice(counter).ToShiftJisString();
-        counter += comment.Length + 1;
-        byte registeredPlayerCount = request.Data.Span[counter++];
-        var clearCount = System.BitConverter.ToUInt32(request.Data.Span.Slice(counter, 4));
-        counter += 4;
-        byte unk2 = request.Data.Span[counter++];
-        byte unk3 = request.Data.Span[counter++];
+        var reader = new SpanReader(request.Data.Span);
 
-        //build a new homeland in the database
+        byte unk1 = reader.ReadByte();
+        uint localIp = reader.ReadUInt32();
+        string name = reader.ReadString(out _).ToShiftJisString();
+        ushort location = reader.ReadUInt16();
+        byte time = reader.ReadByte();
+        string password = reader.ReadString(out _).ToShiftJisString();
+        string comment = reader.ReadString(out _).ToShiftJisString();
+        byte registeredPlayerCount = reader.ReadByte();
+        uint clearCount = reader.ReadUInt32();
+        byte unk2 = reader.ReadByte();
+        byte unk3 = reader.ReadByte();
 
-        //search for existing homelands with this name
-        var homeland = _database.HomeLands.FirstOrDefault(h => h.HomeLandName == name);
+        //search for existing homelands with this id
+        var homeland = _database.HomeLands.FirstOrDefault(h => h.HomeLandId == session.PlayerAccountId);
         if (homeland != null)
         {
             //homeland.Name = name;
+            homeland.LocalIp = localIp;
+            homeland.HomeLandName = name;
             homeland.Location = location;
             homeland.Time = time;
             homeland.Password = password;
@@ -79,6 +75,7 @@ public class HomeLandCreateRequest : BaseRequest
         {
             homeland = new HomeLandEntity
             {
+                HomeLandId = (uint)session.PlayerAccountId, //use account id as homeland id
                 LocalIp = localIp,
                 HomeLandName = name,
                 Location = location,
@@ -91,7 +88,7 @@ public class HomeLandCreateRequest : BaseRequest
             _database.HomeLands.Add(homeland);
         }
         _database.SaveChanges();
-
+        
         session.HomeLand = homeland;
 
         var responses = new List<FragmentMessage>

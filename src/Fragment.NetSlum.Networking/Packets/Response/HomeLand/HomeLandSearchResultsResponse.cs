@@ -38,7 +38,7 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             byte isMostRecent = _homeland.IsMostRecent;
             ushort latency = _homeland.Latency;
 
-            var writer = new MemoryWriter(40 + (int)nameLen + (int)passwordLen + (int)commentLen);
+            var writer = new MemoryWriter(328/*40 + (int)nameLen + (int)passwordLen + (int)commentLen*/);
             writer.Write(homelandId);
             writer.Write(ip);
             writer.Write(nameLen);

@@ -1,7 +1,8 @@
 using System.Collections.Generic;
-using System.Threading.Tasks;
-using Fragment.NetSlum.Core.Extensions;
 using System.Linq;
+using System.Threading.Tasks;
+using Fragment.NetSlum.Core.Buffers;
+using Fragment.NetSlum.Core.Extensions;
 using Fragment.NetSlum.Networking.Attributes;
 using Fragment.NetSlum.Networking.Constants;
 using Fragment.NetSlum.Networking.Objects;
@@ -9,6 +10,7 @@ using Fragment.NetSlum.Networking.Packets.Response.HomeLand;
 using Fragment.NetSlum.Networking.Sessions;
 using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
+using Fragment.NetSlum.TcpServer.Extensions;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
@@ -38,20 +40,19 @@ public class HomeLandSearchRequest : BaseRequest
         }
         */
 
-        var counter = 0;
-        var location = System.BitConverter.ToUInt16(request.Data.Span.Slice(counter, 2));
-        counter += 2;
-        byte distance = request.Data.Span[counter++];
-        var name = request.Data.Span.Slice(counter).ToShiftJisString();
-        counter += name.Length + 1;
-        var players = request.Data.Span[counter++];
-        byte time = request.Data.Span[counter++];
-        byte hasPassword = request.Data.Span[counter++];
-        byte order = request.Data.Span[counter++];
+        var reader = new SpanReader(request.Data.Span);
+
+        ushort location = reader.ReadUInt16();
+        byte distance = reader.ReadByte();
+        string name = reader.ReadString(out _).ToShiftJisString();
+        byte players = reader.ReadByte();
+        byte time = reader.ReadByte();
+        byte hasPassword = reader.ReadByte();
+        byte order = reader.ReadByte();
 
         List<HomeLandEntity> homelands = _database.HomeLands.ToList();
 
-        /*foreach (var homeland in homelands)
+        foreach (var homeland in homelands)
         {
             //Filter by location. If distance is 0, ignore location.
             //Ignore if search is 5000 (Worldwide), or is 2933 (Asia) and HL is <= 2932 (Japan)
@@ -116,7 +117,7 @@ public class HomeLandSearchRequest : BaseRequest
             3 => homelands.OrderBy(h => h.Time).ToList(),
             4 => homelands.OrderByDescending(h => h.ClearCnt).ToList(),
             _ => homelands
-        };*/
+        };
 
         var responses = new List<FragmentMessage>();
         responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)homelands.Count).Build());

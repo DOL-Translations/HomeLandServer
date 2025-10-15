@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -35,27 +36,49 @@ public class AccountInfoRequest : BaseRequest
 	        byte Unk2; //Either 6 or 2, depending on some variable.
         }*/
 
-        var saveId = System.BitConverter.ToUInt32(request.Data.Span.Slice(0, 4));
+        var saveId = System.BitConverter.ToInt32(request.Data.Span.Slice(0, 4));
 
         var accountId = saveId; //_database.PlayerAccounts.FirstOrDefault(p => p.SaveId == saveId)?.Id;
 
         //todo: actually register new acct for id 0
 
-        if (accountId == 0)
-        {
-            accountId = 1;
-        }
-
-        /*if (accountId == null)
+        /*if (accountId == null || accountId < 2)
         {
             accountId = 0;  //await _commandBus.Execute(new RegisterPlayerAccountCommand(saveId));
         }*/
 
-        session.PlayerAccountId = (int)accountId;//.Value;
+        //generate a new account id if given id is < 2
+        //new id should be between 2 and 10, and be unique between _database.PlayerAccounts.Id and _database.HomeLands.HomeLandId
+        if (accountId < 2)
+        {
+            var existingAccountIds = _database.PlayerAccounts.Select(p => p.Id).ToHashSet();
+            var existingHomeLandIds = _database.HomeLands.Select(h => h.HomeLandId).ToHashSet();
+            var existingIds = existingAccountIds.Union(existingHomeLandIds.Select(x => (int)x)).ToHashSet();
+            var newId = 2;
+            while (existingIds.Contains(newId) && newId <= 10)
+            {
+                newId++;
+            }
+            if (newId <= 10)
+            {
+                accountId = newId;
+                // Add the new account to the database
+                var newAccount = new PlayerAccount
+                {
+                    Id = accountId,
+                    SaveId = accountId.ToString(),
+                    CreatedAt = DateTime.UtcNow
+                };
+                _database.PlayerAccounts.Add(newAccount);
+                _database.SaveChanges();
+            }
+        }
+
+        session.PlayerAccountId = accountId;//.Value;
 
         var responses = new List<FragmentMessage>
         {
-            new AccountInfoResponse().SetAccountId((int)accountId/*.Value*/).Build(),
+            new AccountInfoResponse().SetAccountId(accountId/*.Value*/).Build(),
             new EchoResponse().Build(),
             new UrgentAnnouncementResponse().Build(),
         };
