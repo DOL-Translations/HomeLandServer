@@ -34,10 +34,10 @@ public class HomeLandGetIpRequest : BaseRequest
         uint homelandId = System.BitConverter.ToUInt32(request.Data.Span.Slice(0, 4));
         uint ipAddress = _database.HomeLands.FirstOrDefault(p => p.HomeLandId == homelandId)?.LocalIp ?? 0;
         var ipBytes = System.BitConverter.GetBytes(ipAddress);
-        //if (System.BitConverter.IsLittleEndian)
-        //{
+        if (System.BitConverter.IsLittleEndian)
+        {
             System.Array.Reverse(ipBytes);
-        //}
+        }
         ipAddress = System.BitConverter.ToUInt32(ipBytes, 0);
         return SingleMessage(new HomeLandGetIpResponse().SetIpAddress(ipAddress).Build());
     }

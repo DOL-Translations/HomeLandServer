@@ -57,6 +57,14 @@ public class HomeLandCreateRequest : BaseRequest
         byte unk2 = reader.ReadByte();
         byte unk3 = reader.ReadByte();
 
+        if (session.IsOverseas && location != (ushort)5000 && location <= (ushort)8)
+        {
+            //Before: Africa, Antarctica, Asia, Europe, Middle East, North America, Oceania, South America, Other
+            //After: Asia, Africa, Oceania, North America, Middle East, Antarctica, South America, Europe, Other
+            ushort[] locationMapping = new ushort[] { 1, 5, 0, 7, 4, 3, 2, 6, 8 };
+            location = (ushort)(locationMapping[location] + 2933);
+        }
+
         //search for existing homelands with this id
         var homeland = _database.HomeLands.FirstOrDefault(h => h.HomeLandId == session.PlayerAccountId);
         if (homeland != null)

@@ -62,6 +62,11 @@ public class FragmentTcpSession : TcpSession, IScopeable
     public HomeLandEntity? HomeLand { get; set; }
 
     /// <summary>
+    /// Is the player overseas, done for region mapping
+    /// </summary>
+    public bool IsOverseas { get; set; }
+
+    /// <summary>
     /// The character reference that belongs to this session
     /// </summary>
     public int CharacterId { get; set; }
