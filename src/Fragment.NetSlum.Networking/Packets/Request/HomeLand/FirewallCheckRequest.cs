@@ -18,7 +18,7 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 public class FirewallCheckRequest : BaseRequest
 {
 		private const byte RESULT_OK = 0x00;
-		private const byte RESULT_FAIL = 0x01;
+		private const byte RESULT_FAIL = 0x0B;
 		private const int FIREWALL_CHECK_PORT = 9003;
 		
 		public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
