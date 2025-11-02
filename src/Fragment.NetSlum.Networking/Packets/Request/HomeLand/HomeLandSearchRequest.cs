@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -70,15 +71,21 @@ public class HomeLandSearchRequest : BaseRequest
             location = (ushort)(locationMapping[location] + 2933);
         }
 
+        List<HomeLandEntity> allHomelands = _database.HomeLands.ToList();
         List<HomeLandEntity> localHomeLands = new List<HomeLandEntity>();
-        List<HomeLandEntity> globalHomeLands = _database.HomeLands.ToList();
+        List<HomeLandEntity> globalHomeLands = new List<HomeLandEntity>();
 
-        foreach (var homeland in globalHomeLands)
+        foreach (var homeland in allHomelands)
         {
+            // remove own world from list. can't join and host at the same time
+            if(homeland.PlayerAccountId == session.PlayerAccountId)
+            {
+                continue;
+            }
+
             //Filter by name. If name is empty, ignore name.
             if (!string.IsNullOrWhiteSpace(name) && !homeland.HomeLandName.Contains(name))
             {
-                globalHomeLands.Remove(homeland);
                 continue;
             }
 
@@ -90,13 +97,11 @@ public class HomeLandSearchRequest : BaseRequest
                 {
                     if (homeland.RegisteredPlayerCnt >= playerCnt[(int)players])
                     {
-                        globalHomeLands.Remove(homeland);
                         continue;
                     }
                 }
                 else if (homeland.RegisteredPlayerCnt < playerCnt[(int)players])
                 {
-                    globalHomeLands.Remove(homeland);
                     continue;
                 }
             }
@@ -105,19 +110,16 @@ public class HomeLandSearchRequest : BaseRequest
             byte[] timeCnt = new byte[] { 0, 0, 1, 5, 10 };
             if (time != 0 && homeland.Time / 60 < timeCnt[(int)time])
             {
-                globalHomeLands.Remove(homeland);
                 continue;
             }
 
             //Filter by password.
             if (hasPassword == 1 && string.IsNullOrWhiteSpace(homeland.Password))
             {
-                globalHomeLands.Remove(homeland);
                 continue;
             }
             else if (hasPassword == 2 && !string.IsNullOrWhiteSpace(homeland.Password))
             {
-                globalHomeLands.Remove(homeland);
                 continue;
             }
 
@@ -125,8 +127,11 @@ public class HomeLandSearchRequest : BaseRequest
             if (distance != 0 && IsSamePrefecture(location, homeland.Location))
             {
                 localHomeLands.Add(homeland);
-                globalHomeLands.Remove(homeland);
             }
+						else
+						{
+								globalHomeLands.Add(homeland);
+						}
         }
 
         //Sort the list.
@@ -155,9 +160,8 @@ public class HomeLandSearchRequest : BaseRequest
 				var totalCount = localHomeLands.Count + globalHomeLands.Count;
 				
         //Limit to 50 results.
-        if (localHomeLands.Count > 50) localHomeLands = localHomeLands.Take(50).ToList();
-        if (localHomeLands.Count + globalHomeLands.Count > 50) globalHomeLands =
-                globalHomeLands.Take(50 - localHomeLands.Count).ToList();
+        localHomeLands = localHomeLands.Take(50).ToList();
+				globalHomeLands = globalHomeLands.Take(Math.Max(0, 50 - localHomeLands.Count)).ToList();
 
         var responses = new List<FragmentMessage>();
         responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)(localHomeLands.Count+globalHomeLands.Count)).SetTotalCount((uint) totalCount).Build());
