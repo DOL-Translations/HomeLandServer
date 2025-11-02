@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Core.Extensions;
 using Fragment.NetSlum.Networking.Attributes;
 using Fragment.NetSlum.Networking.Constants;
@@ -23,8 +24,12 @@ public class HomeLandUpdateCommentRequest : BaseRequest
 
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-        session.HomeLand.Comment = request.Data.Span.ToShiftJisString();
+				var reader = new SpanReader(request.Data.Span);
+				string comment = reader.ReadString(out _).ToShiftJisString();
+				
+        session.HomeLand.Comment = comment;
         _database.SaveChanges();
+				
         return SingleMessage(new HomeLandUpdateCommentResponse().Build());
     }
 }

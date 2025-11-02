@@ -9,17 +9,17 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class FirewallCheckResponse : BaseResponse
     {
-        private readonly byte _error;
+        private readonly byte _result;
 
-        public FirewallCheckResponse(byte error = 0x00)
+        public FirewallCheckResponse(byte result = 0x00)
         {
-            _error = error;
+            _result = result;
         }
 
         public override FragmentMessage Build()
         {
             var writer = new MemoryWriter(1);
-            writer.Write(_error);
+            writer.Write(_result);
 
             return new FragmentMessage
             {
