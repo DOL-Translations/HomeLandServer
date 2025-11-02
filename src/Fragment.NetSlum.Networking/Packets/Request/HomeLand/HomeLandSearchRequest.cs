@@ -152,13 +152,15 @@ public class HomeLandSearchRequest : BaseRequest
                 break;
         }
 
+				var totalCount = localHomeLands.Count + globalHomeLands.Count;
+				
         //Limit to 50 results.
         if (localHomeLands.Count > 50) localHomeLands = localHomeLands.Take(50).ToList();
         if (localHomeLands.Count + globalHomeLands.Count > 50) globalHomeLands =
                 globalHomeLands.Take(50 - localHomeLands.Count).ToList();
 
         var responses = new List<FragmentMessage>();
-        responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)(localHomeLands.Count+globalHomeLands.Count)).Build());
+        responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)(localHomeLands.Count+globalHomeLands.Count)).SetTotalCount((uint) totalCount).Build());
         foreach (HomeLandEntity homeland in localHomeLands)
         {
             responses.Add(new HomeLandSearchResultsResponse(homeland, session.IsOverseas).Build());

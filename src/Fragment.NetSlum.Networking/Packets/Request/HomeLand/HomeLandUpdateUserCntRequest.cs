@@ -32,8 +32,8 @@ public class HomeLandUpdateUserCntRequest : BaseRequest
         byte registeredPlayerCount = request.Data.Span[0];
         byte maxPlayerCount = request.Data.Span[1];
 
-        session.HomeLand!.RegisteredPlayerCnt = (sbyte)registeredPlayerCount;
-        session.HomeLand!.MaxPlayerCnt = (sbyte)maxPlayerCount;
+        session.HomeLand!.RegisteredPlayerCnt = registeredPlayerCount;
+        session.HomeLand!.MaxPlayerCnt = maxPlayerCount;
         _database.SaveChanges();
         return SingleMessage(new HomeLandUpdateUserCntResponse().Build());
     }

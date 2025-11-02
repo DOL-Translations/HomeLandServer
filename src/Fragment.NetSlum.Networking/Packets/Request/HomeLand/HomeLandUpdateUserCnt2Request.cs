@@ -25,7 +25,7 @@ public class HomeLandUpdateUserCnt2Request : BaseRequest
     {
         /*Request_200F //OPCODE_200F, Not yet seen; update server info for homeland
         {
-	        uint Unk;
+	        uint Unk;  <<-- I would assume this has to be the homeland that is updated?
 	        byte RegisteredPlayerCount;
 	        byte MaxPlayerCount;
         }*/
@@ -34,8 +34,8 @@ public class HomeLandUpdateUserCnt2Request : BaseRequest
         byte registeredPlayerCount = request.Data.Span[4];
         byte maxPlayerCount = request.Data.Span[5];
 
-        session.HomeLand!.RegisteredPlayerCnt = (sbyte)registeredPlayerCount;
-        session.HomeLand!.MaxPlayerCnt = (sbyte)maxPlayerCount;
+        session.HomeLand!.RegisteredPlayerCnt = registeredPlayerCount;
+        session.HomeLand!.MaxPlayerCnt = maxPlayerCount;
         _database.SaveChanges();
         return SingleMessage(new HomeLandUpdateUserCnt2Response().Build());
     }

@@ -16,15 +16,22 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             _searchResultCnt = searchResultCnt;
             return this;
         }
+				
+				private uint _totalCount = 0;
+				
+        public HomeLandSearchResponse SetTotalCount(uint totalCount)
+        {
+            _totalCount = totalCount;
+            return this;
+        }
 
         public override FragmentMessage Build()
         {
-            byte error = 0x00; //0x00 for no error
-            uint unk = 0x00; //unknown
-            var writer = new MemoryWriter(8);
-            writer.Write(error);
+            byte result = 0x00; // 0x00 OK
+            var writer = new MemoryWriter(6);
+            writer.Write(result);
             writer.Write(_searchResultCnt);
-            writer.Write(unk);
+            writer.Write(_totalCount);
 
             return new FragmentMessage
             {

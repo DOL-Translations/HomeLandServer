@@ -18,11 +18,11 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
         }
         public override FragmentMessage Build()
         {
-            byte first = 0x01;
-            uint second = 0x00000001;
-            ushort third = 0x0001;
+            byte first = 0x00;
+            uint second = 0x7F000001;
+            ushort third = 0x3081;
 
-            var writer = new MemoryWriter(8);
+            var writer = new MemoryWriter(7);
             writer.Write(first);
             writer.Write(second);
             writer.Write(third);

@@ -13,6 +13,8 @@ public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public uint HomeLandId { get; set; }
+		
+		public int PlayerAccountId { get; set; }
 
     public uint LocalIp { get; set; }
     
@@ -32,15 +34,19 @@ public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
     [MySqlCollation("cp932_japanese_ci")]
     public required string Comment { get; set; }
 
-    public sbyte RegisteredPlayerCnt { get; set; }
+    public byte RegisteredPlayerCnt { get; set; }
 
-    public sbyte MaxPlayerCnt { get; set; }
+    public byte MaxPlayerCnt { get; set; }
 
     public uint ClearCnt { get; set; }
 
     public byte IsMostRecent { get; set; }
 
     public ushort Latency { get; set; } //move somewhere else?
+		
+		public byte? Unk2_1 { get; set; }
+		public byte? Unk3_1 { get; set; }
+		public ushort? Unk4_2 { get; set; }
 
     void IConfigurableEntity<HomeLandEntity>.Configure(EntityTypeBuilder<HomeLandEntity> entityBuilder)
     {
