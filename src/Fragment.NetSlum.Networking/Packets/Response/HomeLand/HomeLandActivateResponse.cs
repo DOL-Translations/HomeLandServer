@@ -7,18 +7,18 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
-    public class HomeLandUpdateUserCnt2Response : BaseResponse
+    public class HomeLandActivateResponse : BaseResponse
     {
         public override FragmentMessage Build()
         {
-            byte error = 0x00; //0x00 for no error
+            byte result = 0x00; //0x00 for no error
             var writer = new MemoryWriter(1);
-            writer.Write(error);
+            writer.Write(result);
 
             return new FragmentMessage
             {
                 MessageType = MessageType.Data,
-                DataPacketType = OpCodes.HomeLandUpdateUserCnt2,
+                DataPacketType = OpCodes.HomeLandActivate,
                 Data = writer.Buffer,
             };
         }

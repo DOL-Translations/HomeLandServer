@@ -13,8 +13,10 @@ public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
     [Key]
     [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
     public uint HomeLandId { get; set; }
-		
-		public int PlayerAccountId { get; set; }
+    
+    public byte Status { get; set; }
+    
+    public int PlayerAccountId { get; set; }
 
     public uint LocalIp { get; set; }
     
@@ -24,7 +26,7 @@ public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
 
     public ushort Location { get; set; } //Country code
 
-    public byte Time { get; set; } //Elapsed time?
+    public byte Countdown { get; set; }
 
     [MySqlCharSet("cp932")]
     [MySqlCollation("cp932_japanese_ci")]
@@ -40,13 +42,15 @@ public class HomeLandEntity : IConfigurableEntity<HomeLandEntity>
 
     public uint ClearCnt { get; set; }
 
-    public byte IsMostRecent { get; set; }
-
-    public ushort Latency { get; set; } //move somewhere else?
-		
-		public byte? Unk2_1 { get; set; }
-		public byte? Unk3_1 { get; set; }
-		public ushort? Unk4_2 { get; set; }
+    public ushort Latency { get; set; } // latency to matchmaking server
+    
+    public DateTime CreatedAt { get; set; }
+    
+    public DateTime LastUpdate { get; set; }
+    
+    public byte Repeat { get; set; }
+    
+    public byte HeartbeatMode { get; set; }
 
     void IConfigurableEntity<HomeLandEntity>.Configure(EntityTypeBuilder<HomeLandEntity> entityBuilder)
     {

@@ -9,13 +9,18 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class HomeLandCreateResponse : BaseResponse
     {
-        private OpCodes _responseCode;
+        private byte _result;
+        
+        public HomeLandCreateResponse SetResult(byte result)
+        {
+            _result = result;
+            return this;
+        }
 
         public override FragmentMessage Build()
         {
-            byte error = 0x00; //0x00 for no error
             var writer = new MemoryWriter(1);
-            writer.Write(error);
+            writer.Write(_result);
 
             return new FragmentMessage
             {

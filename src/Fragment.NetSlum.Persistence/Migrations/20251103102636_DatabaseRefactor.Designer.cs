@@ -4,6 +4,7 @@ using Fragment.NetSlum.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Fragment.NetSlum.Persistence.Migrations
 {
     [DbContext(typeof(FragmentContext))]
-    partial class FragmentContextModelSnapshot : ModelSnapshot
+    [Migration("20251103102636_DatabaseRefactor")]
+    partial class DatabaseRefactor
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -747,10 +750,6 @@ namespace Fragment.NetSlum.Persistence.Migrations
                         .HasColumnType("tinyint unsigned")
                         .HasColumnName("countdown");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)")
-                        .HasColumnName("created_at");
-
                     b.Property<byte>("HeartbeatMode")
                         .HasColumnType("tinyint unsigned")
                         .HasColumnName("heartbeat_mode");
@@ -920,17 +919,9 @@ namespace Fragment.NetSlum.Persistence.Migrations
 
                     MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<byte>("ClientType")
-                        .HasColumnType("tinyint unsigned")
-                        .HasColumnName("client_type");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)")
                         .HasColumnName("created_at");
-
-                    b.Property<byte>("GameVersion")
-                        .HasColumnType("tinyint unsigned")
-                        .HasColumnName("game_version");
 
                     b.Property<DateTime?>("LastLogin")
                         .HasColumnType("datetime(6)")
@@ -951,6 +942,14 @@ namespace Fragment.NetSlum.Persistence.Migrations
                         .HasMaxLength(32)
                         .HasColumnType("varchar(32)")
                         .HasColumnName("unk1_16");
+
+                    b.Property<byte?>("Unk2_1")
+                        .HasColumnType("tinyint unsigned")
+                        .HasColumnName("unk2_1");
+
+                    b.Property<byte?>("Unk3_1")
+                        .HasColumnType("tinyint unsigned")
+                        .HasColumnName("unk3_1");
 
                     b.HasKey("Id")
                         .HasName("pk_player_accounts");

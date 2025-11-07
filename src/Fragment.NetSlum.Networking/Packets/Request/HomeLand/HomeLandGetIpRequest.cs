@@ -18,9 +18,9 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 public class HomeLandGetIpRequest : BaseRequest
 {
     private readonly FragmentContext _database;
-		
-		private const byte RESULT_OK = 0x00;
-		private const byte RESULT_FAIL = 0x01;
+    
+    private const byte RESULT_OK = 0x00;
+    private const byte RESULT_FAIL = 0x01;
     
     public HomeLandGetIpRequest(FragmentContext database)
     {
@@ -35,37 +35,19 @@ public class HomeLandGetIpRequest : BaseRequest
             ushort Unk;
         }
         */
-				
-				var reader = new SpanReader(request.Data.Span);
-				
-				uint homelandId = reader.ReadUInt32();
-				ushort unk1     = reader.ReadUInt16();
-				
-				Console.WriteLine($"Homeland ID : {homelandId} (0x{homelandId:X8})");
-				Console.WriteLine($"Unk1        : {unk1} (0x{unk1:X4})");
-				
-				uint ipAddress = _database.HomeLands.FirstOrDefault(p => p.HomeLandId == homelandId)?.LocalIp ?? 0;
-				Console.WriteLine($"DB decimal: {ipAddress}, hex: {ipAddress:X8}");
-				Console.WriteLine($"DB value decimal: {ipAddress}, hex: {ipAddress:X}");
-				Console.WriteLine($"IP_GETIP_REQUEST  : {ipAddress}");
-				if(ipAddress == 0)
-				{
-					return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_FAIL).SetIpAddress(ipAddress).Build());
-				}
-				
-				return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_OK).SetIpAddress(ipAddress).Build());
-				
-				
-				////////////////////////////////////////////////////////
+        
+        var reader = new SpanReader(request.Data.Span);
+        
+        uint homelandId = reader.ReadUInt32();
+        ushort unk1     = reader.ReadUInt16();
 
-        /* uint homelandId = System.BitConverter.ToUInt32(request.Data.Span.Slice(0, 4));
         uint ipAddress = _database.HomeLands.FirstOrDefault(p => p.HomeLandId == homelandId)?.LocalIp ?? 0;
-        var ipBytes = System.BitConverter.GetBytes(ipAddress);
-        if (System.BitConverter.IsLittleEndian)
+
+        if(ipAddress == 0)
         {
-            System.Array.Reverse(ipBytes);
+          return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_FAIL).SetIpAddress(ipAddress).Build());
         }
-        ipAddress = System.BitConverter.ToUInt32(ipBytes, 0);
-        return SingleMessage(new HomeLandGetIpResponse().SetIpAddress(ipAddress).Build()); */
+        
+        return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_OK).SetIpAddress(ipAddress).Build());
     }
 }

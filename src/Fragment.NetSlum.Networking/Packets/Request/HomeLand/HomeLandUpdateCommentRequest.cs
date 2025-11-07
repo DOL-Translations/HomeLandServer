@@ -24,12 +24,17 @@ public class HomeLandUpdateCommentRequest : BaseRequest
 
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-				var reader = new SpanReader(request.Data.Span);
-				string comment = reader.ReadString(out _).ToShiftJisString();
-				
+        var reader = new SpanReader(request.Data.Span);
+        string comment = reader.ReadString(out _).ToShiftJisString();
+        
+        if (comment == null)
+        {
+            comment = string.Empty;
+        }
+        
         session.HomeLand.Comment = comment;
         _database.SaveChanges();
-				
+        
         return SingleMessage(new HomeLandUpdateCommentResponse().Build());
     }
 }

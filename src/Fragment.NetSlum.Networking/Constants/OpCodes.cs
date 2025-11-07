@@ -37,9 +37,9 @@ public enum OpCodes : ushort
     HomeLandGetIp = 0x2006,
     HomeLandMascotWithdraw = 0x2007,
     HomeLandGetPendingWithdraws = 0x2008,
-    HomeLandUpdateUserCnt2 = 0x200F,
+    HomeLandActivate = 0x200F,
     Echo = 0x2010,
-    // = 0x2011,
+    LoginReady = 0x2011,
     HL2012Request = 0x2012,
     PlayerWithdrawFromHomeLand = 0x2013,
     FirewallCheck = 0x2014,
@@ -181,7 +181,7 @@ public enum OpCodes : ushort
     DataMailGetNewMailHeader = 0x788a,
     DataGuildReassignMasterResponse = 0x788e,
 
-    //BBS	POSTING	STUFF
+    //BBS  POSTING  STUFF
     DataBbsCheckThreadCreate = 0x780f,
     DataBbsCheckThreadCreateResponse = 0x7810,
     DataBbsCreatePostResponse = 0x7813,
@@ -268,7 +268,7 @@ DATA_SELECT_CHAR2 seems to be a 1:1 clone of the normal OPCODE_DATA_SELECT_CHAR 
     DataLobbyFavoritesAsInquiry = 0x7858,
 
     ///////////////
-    //AREA	SERVER	DEFINES:
+    //AREA  SERVER  DEFINES:
     ///////////////
     Data_AreaServerDiskAuthorizationRequest = 0x785B,
     Data_AreaServerDiskAuthorizationSuccess = 0x785C,

@@ -11,9 +11,9 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
     {
         public override FragmentMessage Build()
         {
-            byte error = 0x00; //0x00 for no error
+            byte result = 0x00; //0x00 for no error
             var writer = new MemoryWriter(1);
-            writer.Write(error);
+            writer.Write(result);
 
             return new FragmentMessage
             {

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,7 @@ using Fragment.NetSlum.Networking.Models;
 using Fragment.NetSlum.Networking.Objects;
 using Fragment.NetSlum.Networking.Pipeline;
 using Fragment.NetSlum.Networking.Stores;
+using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.TcpServer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -65,6 +67,11 @@ public class FragmentTcpSession : TcpSession, IScopeable
     /// Is the player overseas, done for region mapping
     /// </summary>
     public bool IsOverseas { get; set; }
+
+    /// <summary>
+    /// Is the Game version Retail or Test Disc
+    /// </summary>
+    public bool IsTestDisc { get; set; }
 
     /// <summary>
     /// The character reference that belongs to this session
@@ -163,6 +170,26 @@ public class FragmentTcpSession : TcpSession, IScopeable
         try
         {
             ServiceScope.ServiceProvider.GetRequiredService<ChatLobbyStore>().RemoveSession(this);
+
+            // If this session hosted a Homeland, mark it as dormant
+            if (HomeLand != null)
+            {
+                using var scope = ServiceScope.ServiceProvider.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<FragmentContext>();
+
+                var homeland = db.HomeLands.FirstOrDefault(h => h.HomeLandId == HomeLand.HomeLandId);
+                if (homeland != null)
+                {
+                    // Only mark as dormant if it was active (status 0 or 1)
+                    if (homeland.Status < 2)
+                    {
+                        homeland.Status = 2; // 2 = Dormant
+                        homeland.LastUpdate = DateTime.UtcNow;
+                        db.SaveChanges();
+                        _logger.LogInformation("Marked homeland {Id} as dormant.", homeland.HomeLandId);
+                    }
+                }
+            }
 
             _logger.LogDebug("Disposing service scope for {ClassName}", GetType().Name);
             ServiceScope.Dispose();

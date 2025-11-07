@@ -9,7 +9,13 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class EchoResponse : BaseResponse
     {
-        private OpCodes _responseCode;
+        private int _accountId = 0;
+
+        public EchoResponse SetAccountId(int id)
+        {
+            _accountId = id;
+            return this;
+        }
 
         public override FragmentMessage Build()
         {
@@ -18,10 +24,10 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             uint unk2 = 0x00000000;
             ushort unk3 = 0x0000;
 
-            var writer = new MemoryWriter(7);
+            var writer = new MemoryWriter(1);
             writer.Write(unk1);
-            writer.Write(unk2);
-            writer.Write(unk3);
+            /*writer.Write(_accountId);
+            writer.Write(unk3); */
 
             return new FragmentMessage
             {

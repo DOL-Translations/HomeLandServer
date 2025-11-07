@@ -43,25 +43,25 @@ public class HomeLandSearchRequest : BaseRequest
         /*
         Request_HomelandSearch //OPCODE_HOMELAND_SEARCH
         {
-	        ushort Location;
-	        HomelandSearchDistance Distance;
-	        char Name[]; //null terminated
-	        HomelandSearchPlayers Players;
-	        HomelandSearchTime Time;
-	        byte HasPassword;
-	        HomelandSearchOrder Order;
+          ushort Location;
+          HomelandSearchDistance Distance;
+          char Name[]; //null terminated
+          HomelandSearchPlayers Players;
+          HomelandSearchTime Time;
+          byte HasPassword;
+          HomelandSearchOrder Order;
         }
         */
 
         var reader = new SpanReader(request.Data.Span);
 
-        ushort location = reader.ReadUInt16();
-        byte distance = reader.ReadByte();
-        string name = reader.ReadString(out _).ToShiftJisString();
-        byte players = reader.ReadByte();
-        byte time = reader.ReadByte();
+        ushort location  = reader.ReadUInt16();
+        byte distance    = reader.ReadByte();
+        string name      = reader.ReadString(out _).ToShiftJisString();
+        byte players     = reader.ReadByte();
+        byte time        = reader.ReadByte();
         byte hasPassword = reader.ReadByte();
-        byte order = reader.ReadByte();
+        byte order       = reader.ReadByte();
 
         if (session.IsOverseas && location != 5000 && location <= 8)
         {
@@ -71,7 +71,7 @@ public class HomeLandSearchRequest : BaseRequest
             location = (ushort)(locationMapping[location] + 2933);
         }
 
-        List<HomeLandEntity> allHomelands = _database.HomeLands.ToList();
+        List<HomeLandEntity> allHomelands = _database.HomeLands.Where(h => h.Status < 2).ToList();
         List<HomeLandEntity> localHomeLands = new List<HomeLandEntity>();
         List<HomeLandEntity> globalHomeLands = new List<HomeLandEntity>();
 
@@ -108,7 +108,7 @@ public class HomeLandSearchRequest : BaseRequest
 
             //Filter by time.
             byte[] timeCnt = new byte[] { 0, 0, 1, 5, 10 };
-            if (time != 0 && homeland.Time / 60 < timeCnt[(int)time])
+            if (time != 0 && homeland.Countdown / 60 < timeCnt[(int)time])
             {
                 continue;
             }
@@ -128,10 +128,10 @@ public class HomeLandSearchRequest : BaseRequest
             {
                 localHomeLands.Add(homeland);
             }
-						else
-						{
-								globalHomeLands.Add(homeland);
-						}
+            else
+            {
+                globalHomeLands.Add(homeland);
+            }
         }
 
         //Sort the list.
@@ -146,8 +146,8 @@ public class HomeLandSearchRequest : BaseRequest
                 globalHomeLands = globalHomeLands.OrderBy(h => h.RegisteredPlayerCnt).ToList();
                 break;
             case 3:
-                localHomeLands = localHomeLands.OrderBy(h => h.Time).ToList();
-                globalHomeLands = globalHomeLands.OrderBy(h => h.Time).ToList();
+                localHomeLands = localHomeLands.OrderBy(h => h.Countdown).ToList();
+                globalHomeLands = globalHomeLands.OrderBy(h => h.Countdown).ToList();
                 break;
             case 4:
                 localHomeLands = localHomeLands.OrderByDescending(h => h.ClearCnt).ToList();
@@ -157,11 +157,11 @@ public class HomeLandSearchRequest : BaseRequest
                 break;
         }
 
-				var totalCount = localHomeLands.Count + globalHomeLands.Count;
-				
+        var totalCount = localHomeLands.Count + globalHomeLands.Count;
+        
         //Limit to 50 results.
         localHomeLands = localHomeLands.Take(50).ToList();
-				globalHomeLands = globalHomeLands.Take(Math.Max(0, 50 - localHomeLands.Count)).ToList();
+        globalHomeLands = globalHomeLands.Take(Math.Max(0, 50 - localHomeLands.Count)).ToList();
 
         var responses = new List<FragmentMessage>();
         responses.Add(new HomeLandSearchResponse().SetResultCnt((byte)(localHomeLands.Count+globalHomeLands.Count)).SetTotalCount((uint) totalCount).Build());

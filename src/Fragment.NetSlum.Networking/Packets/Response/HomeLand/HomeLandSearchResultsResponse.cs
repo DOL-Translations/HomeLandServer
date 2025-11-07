@@ -23,52 +23,58 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 
         public override FragmentMessage Build()
         {
-					/* Response_HomelandSearchResult //OPCODE_HOMELAND_SEARCH_RESULT
-					{
-						uint HomelandID;
-						uint ExternalIP;
-						uint NameLength;
-						char Name[NameLength]; //Max 12
-						ushort Unk;
-						ushort Location;
-						uint Time; //Elapsed?
-						uint PasswordLength;
-						char Password[PasswordLength]; //Max 16
-						uint CommentLength;
-						char Comment[CommentLength]; //Max 256
-						byte RegisteredPlayerCount; 
-						byte MaxPlayerCount;
-						uint ClearCount;
-						byte IsMostRecent;
-						ushort Latency;
-					} */
-					
-					
+          /* Response_HomelandSearchResult //OPCODE_HOMELAND_SEARCH_RESULT
+          {
+            uint HomelandID;
+            uint ExternalIP;
+            uint NameLength;
+            char Name[NameLength]; //Max 12
+            ushort Unk;
+            ushort Location;
+            uint Time; //Elapsed?
+            uint PasswordLength;
+            char Password[PasswordLength]; //Max 16
+            uint CommentLength;
+            char Comment[CommentLength]; //Max 256
+            byte RegisteredPlayerCount; 
+            byte MaxPlayerCount;
+            uint ClearCount;
+            byte IsMostRecent;
+            ushort Latency;
+          } */
+            
+            uint timeValue = 0;
+            
+            if (_homeland.Status == 0)
+            {
+                uint elapsed = (uint)(DateTime.UtcNow - _homeland.LastUpdate).TotalMinutes;
+                uint countdownMinutes = _homeland.Countdown * 10u;
+                countdownMinutes = (elapsed >= countdownMinutes) ? 0 : (countdownMinutes - elapsed);
+                
+                timeValue = 0xFFFFFF00u | (0xFF - (countdownMinutes & 0xFF));
+            }
+            else
+            {
+                // TODO: needs runtime calculation or correct information from game server
+                // timeValue = (uint)(DateTime.UtcNow - _homeland.CreatedAt).TotalMinutes;
+            }
+            
             uint homelandId           = _homeland.HomeLandId;
             uint ip                   = _homeland.LocalIp;
-						byte[] name               = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.HomeLandName + "\0");
+            byte[] name               = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.HomeLandName + "\0");
             uint nameLen              = (uint) name.Length;
-            ushort unk                = _homeland.Unk4_2 ?? 0x0000; // (ushort) 0x0106;
-            ushort location           = _homeland.Location; //2936; //North America
-            uint time                 = _homeland.Time; //Elapsed?
-						byte[] password           = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.Password + "\0");
+            ushort unk                = 0x0000;
+            ushort location           = _homeland.Location;
+            uint time                 = timeValue;
+            byte[] password           = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.Password + "\0");
             uint passwordLen          = (uint) password.Length;
-						byte[] comment            = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.Comment + "\0");
+            byte[] comment            = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(_homeland.Comment + "\0");
             uint commentLen           = (uint) comment.Length;
             byte registeredPlayerCnt  = _homeland.RegisteredPlayerCnt;
             byte maxPlayerCnt         = _homeland.MaxPlayerCnt;
             uint clearCnt             = _homeland.ClearCnt;
-            byte isMostRecent         = _homeland.IsMostRecent;
+            byte isMostRecent         = 0x00;
             ushort latency            = _homeland.Latency;
-
-						/*foreach (var prop in _homeland.GetType().GetProperties())
-						{
-								Console.WriteLine($"{prop.Name}: {prop.GetValue(_homeland)}");
-						}*/
-						Console.WriteLine($"Reg players  : {registeredPlayerCnt}");
-						Console.WriteLine($"max players  : {maxPlayerCnt}");
-						Console.WriteLine($"IP_SEARCH_RESPONSE  : {ip}");
-
 
             if (_isOverseas)
             {
@@ -87,11 +93,11 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
                         break;
                 }
             }
-						
-						Span<byte> ipOut = stackalloc byte[4];
-						BinaryPrimitives.WriteUInt32BigEndian(ipOut, ip);
-						
-						int totalSize = 37 + (int) nameLen + (int) passwordLen + (int) commentLen;
+            
+            Span<byte> ipOut = stackalloc byte[4];
+            BinaryPrimitives.WriteUInt32BigEndian(ipOut, ip);
+            
+            int totalSize = 37 + (int) nameLen + (int) passwordLen + (int) commentLen;
 
             var writer = new MemoryWriter(totalSize);
             writer.Write(homelandId);
@@ -108,15 +114,8 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             writer.Write(registeredPlayerCnt);
             writer.Write(maxPlayerCnt);
             writer.Write(clearCnt);
-						writer.Write(isMostRecent);
+            writer.Write(isMostRecent);
             writer.Write(latency);
-
-var span = writer.Buffer.Span;
-for (int i = 0; i < span.Length; i++)
-{
-    Console.Write($"{span[i]:X2} ");
-    if ((i + 1) % 16 == 0) Console.WriteLine();
-}
 
             return new FragmentMessage
             {

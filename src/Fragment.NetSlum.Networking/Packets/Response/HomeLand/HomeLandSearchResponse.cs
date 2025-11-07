@@ -16,9 +16,9 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             _searchResultCnt = searchResultCnt;
             return this;
         }
-				
-				private uint _totalCount = 0;
-				
+        
+        private uint _totalCount = 0;
+        
         public HomeLandSearchResponse SetTotalCount(uint totalCount)
         {
             _totalCount = totalCount;
