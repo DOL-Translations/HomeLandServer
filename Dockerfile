@@ -7,9 +7,9 @@ WORKDIR /srv
 COPY Fragment.NetSlum.sln .
 COPY src/. src/.
 
-RUN dotnet restore src/Fragment.NetSlum.Server
+RUN --mount=type=cache,target=/root/.nuget/packages dotnet restore src/Fragment.NetSlum.Server
 
-FROM build as testrunner
+FROM build AS testrunner
 COPY test/. test/.
 RUN dotnet test -c Release --filter "Category=Unit" /p:CollectCoverage=true /p:ExcludeByFile="**/Migrations/*.cs" /p:CoverletOutput='/test/build/' /p:CoverletOutputFormat='json%2ccobertura' /p:MergeWith='/test/build/coverage.json'
 

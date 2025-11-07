@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   fragment_mysql:
     image: 'mysql:8'
