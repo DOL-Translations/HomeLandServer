@@ -7,30 +7,29 @@ using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
-    public class HL2009Response : BaseResponse
+    public class GetMatchingServerResponse : BaseResponse
     {
-        private OpCodes _responseCode;
+        private readonly byte _result;
 
-        public HL2009Response SetStatusCode(OpCodes responseCode)
+        public GetMatchingServerResponse(byte result = 0x00)
         {
-            _responseCode = responseCode;
-            return this;
+            _result = result;
         }
+
         public override FragmentMessage Build()
         {
-            byte first = 0x00;
-            uint second = 0x7F000001;
-            ushort third = 0x3081;
+            uint ipAddrs = 0x00000000;
+            ushort port = 0x3081;
 
             var writer = new MemoryWriter(7);
-            writer.Write(first);
-            writer.Write(second);
-            writer.Write(third);
+            writer.Write(_result);
+            writer.Write(ipAddrs);
+            writer.Write(port);
 
             return new FragmentMessage
             {
                 MessageType = MessageType.Data,
-                DataPacketType = _responseCode,
+                DataPacketType = OpCodes.GetMatchingServer,
                 Data = writer.Buffer,
             };
         }

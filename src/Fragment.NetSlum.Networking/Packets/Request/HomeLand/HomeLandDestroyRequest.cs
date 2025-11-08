@@ -16,9 +16,6 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 [FragmentPacket(MessageType.Data, OpCodes.HomeLandDestroy)]
 public class HomeLandDestroyRequest : BaseRequest
 {
-    private const byte RESULT_OK = 0x00;
-    private const byte RESULT_FAIL = 0x01;
-
     private readonly FragmentContext _database;
     
     public HomeLandDestroyRequest(FragmentContext database)
@@ -30,7 +27,7 @@ public class HomeLandDestroyRequest : BaseRequest
     {
         HomeLandEntity? homeland = session.HomeLand;
         
-        byte result = RESULT_OK;
+        Result result = Result.Ok;
         
         if (homeland == null)
         {
@@ -43,17 +40,17 @@ public class HomeLandDestroyRequest : BaseRequest
             _database.SaveChanges();
             
             session.HomeLand = null;
-            result = RESULT_OK;
+            result = Result.Ok;
         }
         else
         {
             // we have no homeland for this player but we should say it is destroyed, otherwise the game won't update
-            result = RESULT_OK;
+            result = Result.Ok;
         }
 
         var responses = new List<FragmentMessage>
         {
-            new HomeLandDestroyResponse().SetResult(result).Build(),
+            new HomeLandDestroyResponse().SetResult((byte)result).Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(responses);

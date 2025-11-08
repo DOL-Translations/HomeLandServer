@@ -13,6 +13,7 @@ using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
 using Fragment.NetSlum.Core.CommandBus;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 using BCrypt.Net;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
@@ -20,9 +21,6 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 [FragmentPacket(MessageType.Data, OpCodes.AccountInfo)]
 public class AccountInfoRequest : BaseRequest
 {
-    private const byte RESULT_OK = 0x00;
-    private const byte ACCOUNT_INFO_SUCCESS = 0x17;
-    
     private readonly FragmentContext _database;
     private readonly ICommandBus _commandBus;
 
@@ -58,27 +56,37 @@ public class AccountInfoRequest : BaseRequest
         byte clientType        = reader.ReadByte();
         byte gameVersion       = reader.ReadByte();
 
+        session.IsTestDisc = (gameVersion == 2 || gameVersion == 3);
+        session.IsOverseas = (gameVersion == 3 || gameVersion == 7);
+
         string unknown16 = BitConverter.ToString(unknown16Bytes).Replace("-", "");
+
+        Result result = Result.Ok;
+
+        //compatibility - remove from release!
+        //swap endianness
+        if (accountIdSupplied > 10 || accountIdSupplied < 2)
+        {
+            accountIdSupplied = BinaryPrimitives.ReverseEndianness(accountIdSupplied);
+        }
 
         var account = _database.PlayerAccounts.FirstOrDefault(p => p.Id == accountIdSupplied);
 
-        if(account != null)
+        if(account != null && account.Id >= 2)
         {
+            result = Result.AcctInfoSuccess;
             account.LastLogin  = DateTime.UtcNow;
             account.ClientType = clientType;
-            _database.SaveChanges();
+            try { _database.SaveChanges(); } catch { result = Result.Fail; }
 
             session.PlayerAccountId = account.Id;
-            session.IsTestDisc      = (gameVersion == 2);
-
-            byte result_found = ACCOUNT_INFO_SUCCESS;
-
+            
             var response_found = new List<FragmentMessage>
             {
                 new AccountInfoResponse()
                     .SetAccountId(account.Id)
-                    .SetGameVersion(session.IsTestDisc)
-                    .SetResult(result_found)
+                    .SetGameVersion(gameVersion)
+                    .SetResult(result)
                     .Build(),
                 
                 new EchoResponse().Build(),
@@ -104,19 +112,16 @@ public class AccountInfoRequest : BaseRequest
             PasswordHash = hashedPassword,
         };
         _database.PlayerAccounts.Add(newAccount);
-        _database.SaveChanges();
+        try { _database.SaveChanges(); } catch { result = Result.Fail; }
 
         session.PlayerAccountId = newAccount.Id;
-        session.IsTestDisc      = (gameVersion == 2);
-
-        byte result_created = RESULT_OK;
-
+        
         var response_created = new List<FragmentMessage>
         {
             new AccountInfoResponse()
                 .SetAccountId(newAccount.Id)
-                .SetGameVersion(session.IsTestDisc)
-                .SetResult(result_created)
+                .SetGameVersion(gameVersion)
+                .SetResult(result)
                 .SetPlaintextPassword(password)
                 .Build(),
         };

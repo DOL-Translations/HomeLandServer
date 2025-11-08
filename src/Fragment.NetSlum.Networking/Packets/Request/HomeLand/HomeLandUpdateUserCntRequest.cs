@@ -32,9 +32,15 @@ public class HomeLandUpdateUserCntRequest : BaseRequest
         byte registeredPlayerCount = request.Data.Span[0];
         byte maxPlayerCount = request.Data.Span[1];
 
+        if (session.HomeLand == null || session.HomeLand.Status >= 2)
+        {
+            return SingleMessage(new HomeLandUpdateCommentResponse().SetResult((byte)Result.UpdatedUnpublishedHomeLand).Build());
+        }
+
         session.HomeLand!.RegisteredPlayerCnt = registeredPlayerCount;
         session.HomeLand!.MaxPlayerCnt = maxPlayerCount;
-        _database.SaveChanges();
-        return SingleMessage(new HomeLandUpdateUserCntResponse().Build());
+        Result result = Result.Ok;
+        try { _database.SaveChanges(); } catch { result = Result.Fail; }
+        return SingleMessage(new HomeLandUpdateUserCntResponse().SetResult((byte)result).Build());
     }
 }

@@ -6,14 +6,17 @@ using Fragment.NetSlum.Networking.Objects;
 using Fragment.NetSlum.Networking.Packets.Response.HomeLand;
 using Fragment.NetSlum.Networking.Sessions;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
-[FragmentPacket(MessageType.Data, OpCodes.HL2009Request)]
-public class HL2009Request : BaseRequest
+[FragmentPacket(MessageType.Data, OpCodes.GetMatchingServer)]
+public class GetMatchingServerRequest : BaseRequest
 {
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-        return SingleMessage(new HL2009Response().SetStatusCode(OpCodes.HL2009Request).Build());
+        //check matching server IP, Result.MatchingServerNotFound if not found
+
+        return SingleMessage(new GetMatchingServerResponse((byte)Result.Ok).Build());
     }
 }

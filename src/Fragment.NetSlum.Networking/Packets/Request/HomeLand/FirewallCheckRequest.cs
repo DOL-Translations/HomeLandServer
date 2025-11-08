@@ -11,16 +11,15 @@ using Fragment.NetSlum.Networking.Objects;
 using Fragment.NetSlum.Networking.Packets.Response.HomeLand;
 using Fragment.NetSlum.Networking.Sessions;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
 [FragmentPacket(MessageType.Data, OpCodes.FirewallCheck)]
 public class FirewallCheckRequest : BaseRequest
 {
-    private const byte RESULT_OK = 0x00;
-    private const byte RESULT_FAIL = 0x0B;
     private const int FIREWALL_CHECK_PORT = 9003;
-    
+
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
         var reader = new SpanReader(request.Data.Span);
@@ -28,7 +27,7 @@ public class FirewallCheckRequest : BaseRequest
         uint localIp = reader.ReadUInt32();
         ushort unk   = reader.ReadUInt16();
 
-        byte result = RESULT_OK;
+        Result result = Result.Ok;
 
         try
         {
@@ -52,20 +51,20 @@ public class FirewallCheckRequest : BaseRequest
 
             if (completedTask != connectTask || !client.Connected)
             {
-                result = RESULT_FAIL;
+                result = Result.FirewallCheckFailed;
             }
             else
             {
-                result = RESULT_OK;
+                result = Result.Ok;
             }
 
             client.Close();
         }
         catch
         {
-            result = RESULT_FAIL;
+            result = Result.FirewallCheckFailed;
         }
 
-        return SingleMessage(new FirewallCheckResponse(result).Build());
+        return SingleMessage(new FirewallCheckResponse((byte)result).Build());
     }
 }

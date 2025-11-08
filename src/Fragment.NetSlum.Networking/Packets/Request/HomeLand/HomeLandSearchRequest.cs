@@ -62,6 +62,10 @@ public class HomeLandSearchRequest : BaseRequest
         byte time        = reader.ReadByte();
         byte hasPassword = reader.ReadByte();
         byte order       = reader.ReadByte();
+        byte gameVersion = reader.ReadByte(); //check!
+
+        session.IsTestDisc = (gameVersion == 2 || gameVersion == 3);
+        session.IsOverseas = (gameVersion == 3 || gameVersion == 7);
 
         if (session.IsOverseas && location != 5000 && location <= 8)
         {

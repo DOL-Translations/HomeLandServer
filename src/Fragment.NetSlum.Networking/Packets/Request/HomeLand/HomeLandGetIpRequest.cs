@@ -11,6 +11,7 @@ using Fragment.NetSlum.Networking.Sessions;
 using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
@@ -18,9 +19,6 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 public class HomeLandGetIpRequest : BaseRequest
 {
     private readonly FragmentContext _database;
-    
-    private const byte RESULT_OK = 0x00;
-    private const byte RESULT_FAIL = 0x01;
     
     public HomeLandGetIpRequest(FragmentContext database)
     {
@@ -41,13 +39,23 @@ public class HomeLandGetIpRequest : BaseRequest
         uint homelandId = reader.ReadUInt32();
         ushort unk1     = reader.ReadUInt16();
 
-        uint ipAddress = _database.HomeLands.FirstOrDefault(p => p.HomeLandId == homelandId)?.LocalIp ?? 0;
+        HomeLandEntity homeland = _database.HomeLands.FirstOrDefault(p => p.HomeLandId == homelandId);
+        uint ipAddress = homeland?.LocalIp ?? 0;
+        Result result = Result.Ok;
 
-        if(ipAddress == 0)
+        if (homeland == null || homeland?.Status == 3)
         {
-          return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_FAIL).SetIpAddress(ipAddress).Build());
+            result = Result.JoinRemovedHomeLand;
+        }
+        else if (homeland?.Status == 2)
+        {
+            result = Result.JoinSuspendedHomeLand;
+        }
+        else if (ipAddress == 0)
+        {
+            result = Result.Fail;
         }
         
-        return SingleMessage(new HomeLandGetIpResponse().SetResult(RESULT_OK).SetIpAddress(ipAddress).Build());
+        return SingleMessage(new HomeLandGetIpResponse().SetResult((byte)result).SetIpAddress(ipAddress).Build());
     }
 }

@@ -37,6 +37,7 @@ public enum OpCodes : ushort
     HomeLandGetIp = 0x2006,
     HomeLandMascotWithdraw = 0x2007,
     HomeLandGetPendingWithdraws = 0x2008,
+    GetMatchingServer = 0x2009,
     HomeLandActivate = 0x200F,
     Echo = 0x2010,
     LoginReady = 0x2011,

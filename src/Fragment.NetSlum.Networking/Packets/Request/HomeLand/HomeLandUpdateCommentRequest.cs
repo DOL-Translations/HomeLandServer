@@ -31,10 +31,16 @@ public class HomeLandUpdateCommentRequest : BaseRequest
         {
             comment = string.Empty;
         }
-        
+
+        if (session.HomeLand == null || session.HomeLand.Status >= 2)
+        {
+            return SingleMessage(new HomeLandUpdateCommentResponse().SetResult((byte)Result.UpdatedUnpublishedHomeLand).Build());
+        }
+
         session.HomeLand.Comment = comment;
-        _database.SaveChanges();
-        
-        return SingleMessage(new HomeLandUpdateCommentResponse().Build());
+        Result result = Result.Ok;
+        try { _database.SaveChanges(); } catch { result = Result.Fail; }
+
+        return SingleMessage(new HomeLandUpdateCommentResponse().SetResult((byte)result).Build());
     }
 }

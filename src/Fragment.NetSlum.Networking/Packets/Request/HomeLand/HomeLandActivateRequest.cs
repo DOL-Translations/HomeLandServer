@@ -44,8 +44,8 @@ public class HomeLandActivateRequest : BaseRequest
         
         session.HomeLand!.RegisteredPlayerCnt = registeredPlayerCount;
         session.HomeLand!.MaxPlayerCnt = maxPlayerCount;
-        _database.SaveChanges();
-        
+        /*try {*/ _database.SaveChanges(); /*} catch { result = Result.Fail; }*/
+
         return SingleMessage(new HomeLandActivateResponse().Build());
     }
 }

@@ -12,15 +12,13 @@ using Fragment.NetSlum.Networking.Sessions;
 using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
 [FragmentPacket(MessageType.Data, OpCodes.Echo)]
 public class EchoRequest : BaseRequest
 {
-    private const byte RESULT_OK = 0x00;
-    private const byte RESULT_FAIL = 0x01;
-
     private readonly FragmentContext _database;
     
     public EchoRequest(FragmentContext database)
@@ -36,7 +34,7 @@ public class EchoRequest : BaseRequest
 
         HomeLandEntity? homeland = session.HomeLand;
         
-        byte result = RESULT_OK;
+        Result result = Result.Ok;
         int accountId = session.PlayerAccountId;
         uint homelandId = 0;
 
@@ -51,12 +49,12 @@ public class EchoRequest : BaseRequest
         }
         else
         {
-            result = RESULT_FAIL;
+            result = Result.Fail;
         }
         
         var responses = new List<FragmentMessage>
         {
-            new LoginReadyResponse().SetResult(result).SetAccountId(accountId).SetHomelandId(homelandId).Build(),
+            new LoginReadyResponse().SetResult((byte)result).SetAccountId(accountId).SetHomelandId(homelandId).Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(responses);

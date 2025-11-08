@@ -4,13 +4,12 @@ using Fragment.NetSlum.Core.Extensions;
 using Fragment.NetSlum.Networking.Constants;
 using Fragment.NetSlum.Networking.Objects;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 {
     public class AccountInfoResponse : BaseResponse
     {
-        private const byte RESULT_OK = 0x00;
-        private const byte RESULT_FAIL = 0x01;
         private const byte ACCOUNT_INFO_SUCCESS = 0x17;
         
         private int _accountId = 0;
@@ -22,16 +21,20 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
         }
         
         private bool _isTestDisc;
+        private bool _isOverseas;
         
-        public AccountInfoResponse SetGameVersion(bool isTestDisc)
+        public AccountInfoResponse SetGameVersion(byte gameVersion)
         {
-            _isTestDisc = isTestDisc;
+            _isTestDisc = (gameVersion == 2 || gameVersion == 3);
+            _isOverseas = (gameVersion == 3 || gameVersion == 7);
             return this;
         }
-        
-        private byte _result;
-        
-        public AccountInfoResponse SetResult(byte result)
+
+        //NOTE: most of the time we use bytes for the Responses, but here it's
+        //easier with the big switch later to just pass the enum directly.
+        private Result _result;
+
+        public AccountInfoResponse SetResult(Result result)
         {
             _result = result;
             return this;
@@ -47,7 +50,7 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 
         public override FragmentMessage Build()
         {
-            byte result = RESULT_OK;
+            Result result = Result.Ok;
             
             int test1 = 0x00;
             int test2 = 0x00;
@@ -58,44 +61,51 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             byte msgType = 0x02;
             
             string defaultMessage = "Welcome to the HomeLand matching server beta test!\nRemember to report bugs :)";
+            if (!_isOverseas) { defaultMessage = "ホームランド非公式マッチングサーバー(βテスト版)へようこそ！\nバグ報告にご協力いただけると、システム改善につながります。"; }
             string msg1 = "";
             string msg2 = "";
             
             switch(_result)
             {
                 // msg2 is ignored
-                case RESULT_OK:
-                  result = RESULT_OK;
+                case Result.Ok:
+                    result = Result.Ok;
                   
-                  msg1 = defaultMessage;
-                  if(_plaintextPassword != null)
-                  {
-                    msg1 = $"Welcome! New account registered.\nID: {_accountId} | Password: {_plaintextPassword}";
-                  }
-                  break;
+                    msg1 = defaultMessage;
+                    if(_plaintextPassword != null)
+                    {
+                        if (_isOverseas) { msg1 = $"Welcome! New account registered.\nID: {_accountId} | Password: {_plaintextPassword}"; }
+                        else { msg1 = $"ようこそ！登録完了です。\nＩＤ：{_accountId} | パスワード：{_plaintextPassword}"; }
+                    }
+                    break;
                 
                 // reverse message order
-                case ACCOUNT_INFO_SUCCESS:
-                  result = (_isTestDisc ? RESULT_OK : ACCOUNT_INFO_SUCCESS);
-                  
-                  msg1 = "Login successful.";
-                  msg2 = defaultMessage;
-                  break;
-                
+                case Result.AcctInfoSuccess:
+                    result = (_isTestDisc ? Result.Ok : Result.AcctInfoSuccess);
+
+                    if (_isOverseas) { msg1 = "Login successful."; }
+                    else { msg1 = "ログイン成功"; }
+                    msg2 = defaultMessage;
+                    break;
+
+                case Result.AcctInfoError:
+                    result = (_isTestDisc ? Result.Fail : Result.AcctInfoError);
+
+                    if (_isOverseas) { msg1 = "Account information error.\nPlease try again later."; }
+                    else { msg1 = "アカウント情報エラーが発生しました。\nしばらくしてから再度お試しください。"; }
+                    msg2 = "*";
+                    break;
+
                 default:
-                  result = RESULT_FAIL; // error code 21049
-                  
-                  msg1 = $"Unknown result code: 0x{result:X2}. Please forward this information.";
-                  msg2 = "*";
-                  break;
+                    result = _result;
+                    break;
             }
-            
             
             byte[] msg1Bytes = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(msg1 + "\0");
             byte[] msg2Bytes = System.Text.Encoding.GetEncoding("shift_jis").GetBytes(msg2 + "\0");
             var writer = new MemoryWriter(40 + msg1Bytes.Length + msg2Bytes.Length);
 
-            writer.Write(result);
+            writer.Write((byte)result);
             writer.Write(_accountId);
             writer.Write(test1);
             writer.Write(test2);

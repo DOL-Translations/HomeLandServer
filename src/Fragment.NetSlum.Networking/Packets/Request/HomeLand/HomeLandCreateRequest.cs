@@ -12,15 +12,13 @@ using Fragment.NetSlum.Networking.Sessions;
 using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
+using Result = Fragment.NetSlum.Networking.Constants.Result;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
 [FragmentPacket(MessageType.Data, OpCodes.HomeLandCreate)]
 public class HomeLandCreateRequest : BaseRequest
 {
-    private const byte RESULT_OK = 0x00;
-    private const byte RESULT_FAIL = 0x01;
-    
     private readonly FragmentContext _database;
     
     public HomeLandCreateRequest(FragmentContext database)
@@ -59,7 +57,12 @@ public class HomeLandCreateRequest : BaseRequest
         byte registeredPlayerCount  = reader.ReadByte();
         uint clearCount             = reader.ReadUInt32();
         byte repeat                 = reader.ReadByte();
-        byte heartbeat              = reader.ReadByte();
+        byte gameVersion               = reader.ReadByte();
+
+        session.IsTestDisc = (gameVersion == 2 || gameVersion == 3);
+        session.IsOverseas = (gameVersion == 3 || gameVersion == 7);
+
+        Result result = Result.Ok;
 
         Console.WriteLine($"IP_CREATE_REQUEST  : {localIp}");
 
@@ -71,15 +74,24 @@ public class HomeLandCreateRequest : BaseRequest
             location = (ushort)(locationMapping[location] + 2933);
         }
 
+        //todo, run the firewall check *again* and return Result.PublishFailedFirewall if it fails
+
         //search for existing homelands with this id
         var homeland = _database.HomeLands.FirstOrDefault(h => h.PlayerAccountId == session.PlayerAccountId && h.Status < 3);
         if (homeland != null)
         {
-            homeland.Status = 1;
-            homeland.LocalIp = localIp;
-            homeland.RegisteredPlayerCnt = registeredPlayerCount;
-            homeland.ClearCnt = clearCount;
-            homeland.LastUpdate = DateTime.UtcNow;
+            if (homeland.LastUpdate + TimeSpan.FromHours(1) < DateTime.UtcNow)
+            {
+                result = Result.PublishFailedWaitOneHour;
+            }
+            else
+            {
+                homeland.Status = 1;
+                homeland.LocalIp = localIp;
+                homeland.RegisteredPlayerCnt = registeredPlayerCount;
+                homeland.ClearCnt = clearCount;
+                homeland.LastUpdate = DateTime.UtcNow;
+            }
         }
         else
         {
@@ -105,17 +117,17 @@ public class HomeLandCreateRequest : BaseRequest
                 CreatedAt           = DateTime.UtcNow,
                 LastUpdate          = DateTime.UtcNow,
                 Repeat              = repeat,
-                HeartbeatMode       = heartbeat,
+                HeartbeatMode       = 0,
             };
             _database.HomeLands.Add(homeland);
         }
-        _database.SaveChanges();
-        
+        try { _database.SaveChanges(); } catch { result = Result.PublishFailed; }
+
         session.HomeLand = homeland;
 
         var responses = new List<FragmentMessage>
         {
-            new HomeLandCreateResponse().SetResult(RESULT_OK).Build(),
+            new HomeLandCreateResponse().SetResult((byte)result).Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(responses);
