@@ -52,27 +52,33 @@ public class AccountInfoRequest : BaseRequest
         var reader = new SpanReader(request.Data.Span);
 
         uint accountIdSupplied = reader.ReadUInt32();
-        byte[] unknown16Bytes  = reader.Read(16).ToArray();
+        byte[] accountKeyBytes  = reader.Read(16).ToArray();
         byte clientType        = reader.ReadByte();
         byte gameVersion       = reader.ReadByte();
 
         session.IsTestDisc = (gameVersion == 2 || gameVersion == 3);
         session.IsOverseas = (gameVersion == 3 || gameVersion == 7);
 
-        string unknown16 = BitConverter.ToString(unknown16Bytes).Replace("-", "");
+        string accountKey = BitConverter.ToString(accountKeyBytes).Replace("-", "");
 
         Result result = Result.Ok;
 
         //compatibility - remove from release!
         //swap endianness
-        if (accountIdSupplied > 10 || accountIdSupplied < 2)
+        /*if (accountIdSupplied > 10 || accountIdSupplied < 2)
         {
             accountIdSupplied = BinaryPrimitives.ReverseEndianness(accountIdSupplied);
+        }*/
+
+        PlayerAccount account = null;
+        if (accountIdSupplied >= 2)
+        {
+            account = _database.PlayerAccounts.FirstOrDefault(p => p.Id == accountIdSupplied); /*&& p.Unk1_16 == accountKey);*/
         }
 
-        var account = _database.PlayerAccounts.FirstOrDefault(p => p.Id == accountIdSupplied);
+        //todo: if accountKey is 00 generate a new one
 
-        if(account != null && account.Id >= 2)
+        if (account != null)
         {
             result = Result.AcctInfoSuccess;
             account.LastLogin  = DateTime.UtcNow;
@@ -85,6 +91,7 @@ public class AccountInfoRequest : BaseRequest
             {
                 new AccountInfoResponse()
                     .SetAccountId(account.Id)
+                    .SetAccountKey(accountKeyBytes)
                     .SetGameVersion(gameVersion)
                     .SetResult(result)
                     .Build(),
@@ -103,10 +110,10 @@ public class AccountInfoRequest : BaseRequest
 
         var newAccount = new PlayerAccount
         {
-            Id = 0,
+            Id = accountIdSupplied >= 2 ? (int)accountIdSupplied : 0,
             SaveId = tempSaveId.ToString(),
             CreatedAt = DateTime.UtcNow,
-            Unk1_16 = unknown16,
+            Unk1_16 = accountKey,
             ClientType = clientType,
             GameVersion = gameVersion,
             PasswordHash = hashedPassword,
@@ -120,10 +127,13 @@ public class AccountInfoRequest : BaseRequest
         {
             new AccountInfoResponse()
                 .SetAccountId(newAccount.Id)
+                .SetAccountKey(accountKeyBytes)
                 .SetGameVersion(gameVersion)
                 .SetResult(result)
                 .SetPlaintextPassword(password)
                 .Build(),
+
+            new EchoResponse().Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(response_created);

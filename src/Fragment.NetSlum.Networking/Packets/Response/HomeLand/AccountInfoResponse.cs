@@ -19,7 +19,16 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             _accountId = id;
             return this;
         }
-        
+
+        private byte[]? _accountKey;
+
+        public AccountInfoResponse SetAccountKey(byte[] key)
+        {
+            if (key.Length != 16) { key = new byte[16]; }
+            _accountKey = key;
+            return this;
+        }
+
         private bool _isTestDisc;
         private bool _isOverseas;
         
@@ -52,11 +61,6 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
         {
             Result result = Result.Ok;
             
-            int test1 = 0x00;
-            int test2 = 0x00;
-            int test3 = 0x00;
-            int test4 = 0x00;
-
             byte heartbeatMode = 0xFF;
             byte msgType = 0x02;
             
@@ -107,10 +111,7 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 
             writer.Write((byte)result);
             writer.Write(_accountId);
-            writer.Write(test1);
-            writer.Write(test2);
-            writer.Write(test3);
-            writer.Write(test4);
+            writer.Write(_accountKey.AsSpan());
             writer.Write(heartbeatMode);
             writer.Write(msgType);
             

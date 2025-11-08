@@ -1,3 +1,4 @@
+
 using System;
 using System.Linq;
 using System.Collections.Generic;
@@ -54,7 +55,7 @@ public class EchoRequest : BaseRequest
         
         var responses = new List<FragmentMessage>
         {
-            new LoginReadyResponse().SetResult((byte)result).SetAccountId(accountId).SetHomelandId(homelandId).Build(),
+            //new LoginReadyResponse().SetResult((byte)result).SetAccountId(accountId).SetHomelandId(homelandId).Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(responses);

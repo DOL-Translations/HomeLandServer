@@ -42,22 +42,19 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             byte IsMostRecent;
             ushort Latency;
           } */
-            
-            uint timeValue = 0;
-            
-            if (_homeland.Status == 0)
-            {
-                uint elapsed = (uint)(DateTime.UtcNow - _homeland.LastUpdate).TotalMinutes;
-                uint countdownMinutes = _homeland.Countdown * 10u;
-                countdownMinutes = (elapsed >= countdownMinutes) ? 0 : (countdownMinutes - elapsed);
-                
-                timeValue = 0xFFFFFF00u | (0xFF - (countdownMinutes & 0xFF));
-            }
-            else
-            {
-                // TODO: needs runtime calculation or correct information from game server
-                // timeValue = (uint)(DateTime.UtcNow - _homeland.CreatedAt).TotalMinutes;
-            }
+
+            //The time formatting here's a little tricky. Negative values go to -255,
+            //but positive values can so almost to the full int max.
+            //(Needs to be verified.)
+
+            //It appears the game just uses standard int
+            uint elapsedMinutes = (uint)(DateTime.UtcNow - _homeland.LastUpdate).TotalMinutes;
+            uint countdownMinutes = _homeland.Countdown * 10u;
+            uint timeValue = (uint)(elapsedMinutes - countdownMinutes);
+
+            //int remaining = (int)(countdownMinutes - elapsedMinutes);
+            //if (remaining > 0) { timeValue = unchecked((uint)Math.Max(-remaining, -255)); }
+            //else { timeValue = uptime; }
             
             uint homelandId           = _homeland.HomeLandId;
             uint ip                   = _homeland.LocalIp;

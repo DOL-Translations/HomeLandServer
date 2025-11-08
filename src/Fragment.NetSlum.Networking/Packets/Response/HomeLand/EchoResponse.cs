@@ -24,10 +24,10 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             uint unk2 = 0x00000000;
             ushort unk3 = 0x0000;
 
-            var writer = new MemoryWriter(1);
+            var writer = new MemoryWriter(7);
             writer.Write(unk1);
-            /*writer.Write(_accountId);
-            writer.Write(unk3); */
+            writer.Write(unk2);
+            writer.Write(unk3);
 
             return new FragmentMessage
             {
