@@ -21,11 +21,7 @@ public enum OpCodes : ushort
     LobbyUserEnterGreeting = 0x5,
 
     //HOMELAND PACKETS - 0x20xx
-    HL2005Response = 0x2005,
-    HL2007Response = 0x2007,
-    HL2009Request = 0x2009,
-    HL2009Response = 0x200A, //fake, don't use
-    HL2011Response = 0x2011,
+    HL2016Response = 0x2016,
 
     AccountInfo = 0x2000,
     HomeLandCreate = 0x2001,

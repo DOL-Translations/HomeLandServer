@@ -80,18 +80,18 @@ public class HomeLandCreateRequest : BaseRequest
         var homeland = _database.HomeLands.FirstOrDefault(h => h.PlayerAccountId == session.PlayerAccountId && h.Status < 3);
         if (homeland != null)
         {
-            if (homeland.LastUpdate + TimeSpan.FromHours(1) < DateTime.UtcNow)
+            /*if (homeland.LastUpdate + TimeSpan.FromHours(1) > DateTime.UtcNow)
             {
                 result = Result.PublishFailedWaitOneHour;
             }
             else
-            {
+            {*/
                 homeland.Status = 1;
                 homeland.LocalIp = localIp;
                 homeland.RegisteredPlayerCnt = registeredPlayerCount;
                 homeland.ClearCnt = clearCount;
                 homeland.LastUpdate = DateTime.UtcNow;
-            }
+            //}
         }
         else
         {

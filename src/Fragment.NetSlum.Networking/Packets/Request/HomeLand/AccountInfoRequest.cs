@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Networking.Attributes;
@@ -29,11 +30,36 @@ public class AccountInfoRequest : BaseRequest
         _database = database;
         _commandBus = commandBus;
     }
-    
+
+    private static readonly ThreadLocal<Random> _rng = new ThreadLocal<Random>(() => new Random());
+
+    private uint GenerateRandomStartingId()
+    {
+        const uint min = 1_000_000_000;
+        const uint max = int.MaxValue;
+
+        Random random = _rng.Value;
+        return (uint)random.Next((int)min, (int)max);
+    }
+
+    private uint GenerateAccountId(FragmentContext db)
+    {
+        uint id = GenerateRandomStartingId();
+
+        // Probe upward until a free ID is found
+        while (db.PlayerAccounts.Any(p => p.Id == id))
+        {
+            id++;
+            if (id >= int.MaxValue) id = 1_000_000_000; // wrap once if needed
+        }
+
+        return id;
+    }
+
     private static string GeneratePassword(int length = 8)
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*";
-        var random = new Random();
+        Random random = _rng.Value;
         return new string(Enumerable.Range(0, length)
             .Select(_ => chars[random.Next(chars.Length)])
             .ToArray());
@@ -63,17 +89,33 @@ public class AccountInfoRequest : BaseRequest
 
         Result result = Result.Ok;
 
-        //compatibility - remove from release!
-        //swap endianness
-        /*if (accountIdSupplied > 10 || accountIdSupplied < 2)
-        {
-            accountIdSupplied = BinaryPrimitives.ReverseEndianness(accountIdSupplied);
-        }*/
-
         PlayerAccount account = null;
-        if (accountIdSupplied >= 2)
+        if (accountIdSupplied >= 1_000_000_000 && accountIdSupplied <= int.MaxValue)
         {
             account = _database.PlayerAccounts.FirstOrDefault(p => p.Id == accountIdSupplied); /*&& p.Unk1_16 == accountKey);*/
+        }
+        else
+        {
+            if (_database.PlayerAccounts.Count() >= (int.MaxValue - 1_000_000_000))
+            {
+                result = Result.AcctMatchingServerFull;
+                var response_full = new List<FragmentMessage>
+                {
+                    new AccountInfoResponse()
+                        .SetAccountId(0)
+                        .SetAccountKey(accountKeyBytes)
+                        .SetGameVersion(gameVersion)
+                        .SetResult(result)
+                        .Build(),
+                    
+                    new EchoResponse().Build(),
+                };
+                return new ValueTask<ICollection<FragmentMessage>>(response_full);
+            }
+            else
+            {
+                accountIdSupplied = GenerateAccountId(_database);
+            }
         }
 
         //todo: if accountKey is 00 generate a new one
@@ -110,7 +152,8 @@ public class AccountInfoRequest : BaseRequest
 
         var newAccount = new PlayerAccount
         {
-            Id = accountIdSupplied >= 2 ? (int)accountIdSupplied : 0,
+            //randomly generate valid id if none supplied
+            Id = (int)accountIdSupplied,
             SaveId = tempSaveId.ToString(),
             CreatedAt = DateTime.UtcNow,
             Unk1_16 = accountKey,
