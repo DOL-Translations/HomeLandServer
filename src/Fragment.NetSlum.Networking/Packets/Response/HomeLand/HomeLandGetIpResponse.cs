@@ -31,10 +31,13 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             Console.WriteLine($"_ipAddress = 0x{_ipAddress:X8}");
             Span<byte> ipOut = stackalloc byte[4];
             BinaryPrimitives.WriteUInt32BigEndian(ipOut, _ipAddress);
-            
-            var writer = new MemoryWriter(5);
+
+            uint unk = 0;
+
+            var writer = new MemoryWriter(9);
             writer.Write(_result);
             writer.Write(ipOut);
+            writer.Write(unk);
 
             return new FragmentMessage
             {

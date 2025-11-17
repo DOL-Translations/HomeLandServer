@@ -20,6 +20,22 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             return this;
         }
 
+        private string GetAccountIdString(int id)
+        {
+            //Account ID to string is in decimal, 0-9 are A-K, skipping I
+            string accountIdString = "";
+            int tempId = id;
+            do
+            {
+                int digit = tempId % 10;
+                char charDigit = (_isOverseas)?(char)('A' + digit):(char)('Ａ' + digit);
+                if ((_isOverseas && charDigit >= 'I') || (!_isOverseas && charDigit >= 'Ｉ')) { charDigit++; } //skip I
+                accountIdString = charDigit + accountIdString;
+                tempId /= 10;
+            } while (tempId > 0);
+            return accountIdString;
+        }
+
         private byte[]? _accountKey;
 
         public AccountInfoResponse SetAccountKey(byte[] key)
@@ -68,8 +84,10 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             if (!_isOverseas) { defaultMessage = "ホームランド非公式マッチングサーバー(βテスト版)へようこそ！\nバグ報告にご協力いただけると、システム改善につながります。"; }
             string msg1 = "";
             string msg2 = "";
-            
-            switch(_result)
+
+            string accountIdStr = GetAccountIdString(_accountId);
+
+            switch (_result)
             {
                 // msg2 is ignored
                 case Result.Ok:
@@ -78,8 +96,8 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
                     msg1 = defaultMessage;
                     if(_plaintextPassword != null)
                     {
-                        if (_isOverseas) { msg1 = $"Welcome! New account registered.\nID: {_accountId} | Password: {_plaintextPassword}"; }
-                        else { msg1 = $"ようこそ！登録完了です。\nＩＤ：{_accountId} | パスワード：{_plaintextPassword}"; }
+                        if (_isOverseas) { msg1 = $"Welcome! New account registered.\nID: {accountIdStr} | Password: {_plaintextPassword}"; }
+                        else { msg1 = $"ようこそ！登録完了です。\nＩＤ：{accountIdStr} | パスワード：{_plaintextPassword}"; }
                     }
                     break;
                 

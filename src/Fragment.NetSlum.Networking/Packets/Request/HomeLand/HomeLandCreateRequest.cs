@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Collections.Generic;
+using System.Net;
 using System.Threading.Tasks;
 using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Core.Extensions;
@@ -13,6 +14,7 @@ using Fragment.NetSlum.Persistence;
 using Fragment.NetSlum.Persistence.Entities;
 using OpCodes = Fragment.NetSlum.Networking.Constants.OpCodes;
 using Result = Fragment.NetSlum.Networking.Constants.Result;
+using Fragment.NetSlum.TcpServer.Extensions;
 
 namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 
@@ -65,6 +67,9 @@ public class HomeLandCreateRequest : BaseRequest
         Result result = Result.Ok;
 
         Console.WriteLine($"IP_CREATE_REQUEST  : {localIp}");
+        byte[] ipBytes = IPAddress.Parse(session.Socket!.GetClientIp()).GetAddressBytes();
+        //localIp = (uint)(ipBytes[0] | (ipBytes[1] << 8) | (ipBytes[2] << 16) | (ipBytes[3] << 24));
+        localIp = ((uint)ipBytes[0] << 24) | ((uint)ipBytes[1] << 16) | ((uint)ipBytes[2] << 8) | ipBytes[3];
 
         if (session.IsOverseas && location != (ushort)5000 && location <= (ushort)8)
         {
@@ -128,6 +133,7 @@ public class HomeLandCreateRequest : BaseRequest
         var responses = new List<FragmentMessage>
         {
             new HomeLandCreateResponse().SetResult((byte)result).Build(),
+            new HL2016Response(0x01).Build(),
         };
 
         return new ValueTask<ICollection<FragmentMessage>>(responses);
