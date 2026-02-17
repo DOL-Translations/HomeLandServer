@@ -25,12 +25,14 @@ public class HomeLandGetPendingWithdrawsRequest : BaseRequest
 
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-        var reader = new SpanReader(request.Data.Span);
+        //py fix
+        //var reader = new SpanReader(request.Data.Span);
         
-        byte status    = reader.ReadByte();
-        byte count     = reader.ReadByte();
-        uint dummyData = reader.ReadUInt32();
-        
+        //byte status    = reader.ReadByte();
+        //byte count     = reader.ReadByte();
+        //uint dummyData = reader.ReadUInt32();
+
+        //TODO: spit back out what it's given
         return SingleMessage(new HomeLandGetPendingWithdrawsResponse().Build());
     }
 }

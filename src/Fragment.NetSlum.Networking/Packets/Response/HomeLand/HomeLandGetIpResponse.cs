@@ -34,10 +34,11 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 
             uint unk = 0;
 
-            var writer = new MemoryWriter(9);
+            //py fix
+            var writer = new MemoryWriter(5);
             writer.Write(_result);
             writer.Write(ipOut);
-            writer.Write(unk);
+            //writer.Write(unk);
 
             return new FragmentMessage
             {

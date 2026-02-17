@@ -1,7 +1,9 @@
 using System;
+using System.Buffers.Binary;
 using System.Linq;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Sockets;
 using System.Threading.Tasks;
 using Fragment.NetSlum.Core.Buffers;
 using Fragment.NetSlum.Core.Extensions;
@@ -22,10 +24,22 @@ namespace Fragment.NetSlum.Networking.Packets.Request.HomeLand;
 public class HomeLandCreateRequest : BaseRequest
 {
     private readonly FragmentContext _database;
-    
+
+    private const int FIREWALL_CHECK_PORT = 9003;
+
     public HomeLandCreateRequest(FragmentContext database)
     {
         _database = database;
+    }
+
+    public static uint IPv4ToUInt32(IPAddress ip)
+    {
+        if (ip is null) throw new ArgumentNullException(nameof(ip));
+
+        var v4 = ip.MapToIPv4();
+        var b = v4.GetAddressBytes(); // 4 bytes
+
+        return ((uint)b[0] << 24) | ((uint)b[1] << 16) | ((uint)b[2] << 8) | b[3];
     }
 
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
@@ -67,10 +81,48 @@ public class HomeLandCreateRequest : BaseRequest
         Result result = Result.Ok;
 
         Console.WriteLine($"IP_CREATE_REQUEST  : {localIp}");
-        byte[] ipBytes = IPAddress.Parse(session.Socket!.GetClientIp()).GetAddressBytes();
-        //localIp = (uint)(ipBytes[0] | (ipBytes[1] << 8) | (ipBytes[2] << 16) | (ipBytes[3] << 24));
-        localIp = ((uint)ipBytes[0] << 24) | ((uint)ipBytes[1] << 16) | ((uint)ipBytes[2] << 8) | ipBytes[3];
 
+        //byte[] ipBytes = IPAddress.Parse(session.Socket!.GetClientIp()).GetAddressBytes();
+        //localIp = (uint)(ipBytes[0] | (ipBytes[1] << 8) | (ipBytes[2] << 16) | (ipBytes[3] << 24));
+        //localIp = ((uint)ipBytes[0] << 24) | ((uint)ipBytes[1] << 16) | ((uint)ipBytes[2] << 8) | ipBytes[3];
+        
+        Span<byte> ipBytes = stackalloc byte[4];
+        BinaryPrimitives.WriteUInt32BigEndian(ipBytes, localIp);
+
+        var clientReportedIp = new IPAddress(ipBytes.ToArray());
+
+        var actualClientIp = ((IPEndPoint)session.Socket!.RemoteEndPoint!).Address;
+        var targetIp = clientReportedIp.IsPrivate() ? actualClientIp : clientReportedIp;
+
+        //todo: store both local and global ip
+
+        try
+        {
+            using var client = new TcpClient();
+
+            var connectTask = client.ConnectAsync(targetIp, FIREWALL_CHECK_PORT);
+            var timeoutTask = Task.Delay(TimeSpan.FromSeconds(5));
+
+            // Wait for either connection or timeout to complete
+            var completedTask = Task.WhenAny(connectTask, timeoutTask).GetAwaiter().GetResult();
+
+            if (completedTask != connectTask || !client.Connected)
+            {
+                result = Result.PublishFailedFirewall;
+            }
+            else
+            {
+                result = Result.Ok;
+            }
+
+            client.Close();
+        }
+        catch
+        {
+            result = Result.PublishFailedFirewall;
+        }
+        Console.WriteLine($"FirewallCheckRequest: clientReportedIp={clientReportedIp}, actualClientIp={actualClientIp}, targetIp={targetIp}, result={result}");
+        
         if (session.IsOverseas && location != (ushort)5000 && location <= (ushort)8)
         {
             //Before: Africa, Antarctica, Asia, Europe, Middle East, North America, Oceania, South America, Other
@@ -92,7 +144,7 @@ public class HomeLandCreateRequest : BaseRequest
             else
             {*/
                 homeland.Status = 1;
-                homeland.LocalIp = localIp;
+                homeland.LocalIp = IPv4ToUInt32(targetIp);
                 homeland.RegisteredPlayerCnt = registeredPlayerCount;
                 homeland.ClearCnt = clearCount;
                 homeland.LastUpdate = DateTime.UtcNow;
@@ -111,7 +163,7 @@ public class HomeLandCreateRequest : BaseRequest
                 HomeLandId = 0,
                 Status              = status,
                 PlayerAccountId     = session.PlayerAccountId,
-                LocalIp             = localIp,
+                LocalIp             = IPv4ToUInt32(targetIp),
                 HomeLandName        = name,
                 Location            = location,
                 Countdown           = time,

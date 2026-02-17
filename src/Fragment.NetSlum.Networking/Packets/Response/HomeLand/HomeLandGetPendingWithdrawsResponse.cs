@@ -14,7 +14,10 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
             byte result = 0x00; //0x00 for no error
             byte count  = 0x00;
             uint dummy  = 0x00000000;
-            
+
+            //py fix
+            //todo: spit back out what it's given
+
             var writer = new MemoryWriter(6);
             writer.Write(result);
             writer.Write(count);

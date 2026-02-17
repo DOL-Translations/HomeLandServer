@@ -19,10 +19,11 @@ namespace Fragment.NetSlum.Networking.Packets.Response.HomeLand
 
         public override FragmentMessage Build()
         {
+            //py test
             //byte error = 0x00; //0x00 for no error
-            byte unk1 = 0x00;
-            uint unk2 = 0x00000000;
-            ushort unk3 = 0x0000;
+            byte unk1 = 0x01;
+            uint unk2 = 0x00000002;
+            ushort unk3 = 0x0003;
 
             var writer = new MemoryWriter(7);
             writer.Write(unk1);

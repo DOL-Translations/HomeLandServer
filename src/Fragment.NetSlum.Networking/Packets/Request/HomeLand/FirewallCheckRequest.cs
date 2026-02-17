@@ -1,4 +1,5 @@
 using System;
+using System.Buffers.Binary;
 using System.Net;
 using System.Net.Sockets;
 using System.Collections.Generic;
@@ -31,16 +32,21 @@ public class FirewallCheckRequest : BaseRequest
 
         try
         {
-            // Convert uint IP to IPAddress (big endian)
-            var ipBytes = BitConverter.GetBytes(localIp);
+            //py fix
 
-            var clientReportedIp = new IPAddress(ipBytes);
-            
+            // Convert uint IP to IPAddress (big endian)
+            //var ipBytes = BitConverter.GetBytes(localIp);
+            Span<byte> ipBytes = stackalloc byte[4];
+            BinaryPrimitives.WriteUInt32BigEndian(ipBytes, localIp);
+
+            //var clientReportedIp = new IPAddress(ipBytes);
+            var clientReportedIp = new IPAddress(ipBytes.ToArray());
+
             var actualClientIp = ((IPEndPoint)session.Socket!.RemoteEndPoint!).Address;
             var targetIp = clientReportedIp.IsPrivate() ? actualClientIp : clientReportedIp;
 
             Console.WriteLine($"FirewallCheckRequest: clientReportedIp={clientReportedIp}, actualClientIp={actualClientIp}, targetIp={targetIp}, result={result}, unk={unk}");
-
+            
             using var client = new TcpClient();
 
             var connectTask = client.ConnectAsync(targetIp, FIREWALL_CHECK_PORT);

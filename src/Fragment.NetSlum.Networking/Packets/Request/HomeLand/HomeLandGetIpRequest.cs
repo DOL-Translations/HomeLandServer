@@ -56,6 +56,7 @@ public class HomeLandGetIpRequest : BaseRequest
             result = Result.Fail;
         }
         
+        Console.WriteLine($"HomeLandGetIpRequest: homelandId={homelandId}, ipAddress={ipAddress}, result={result}");
         return SingleMessage(new HomeLandGetIpResponse().SetResult((byte)result).SetIpAddress(ipAddress).Build());
     }
 }

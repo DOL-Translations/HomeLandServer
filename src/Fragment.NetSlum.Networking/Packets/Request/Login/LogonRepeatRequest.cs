@@ -22,8 +22,11 @@ public class LogonRepeatRequest :BaseRequest
 
     public override ValueTask<ICollection<FragmentMessage>> GetResponse(FragmentTcpSession session, FragmentMessage request)
     {
-        BaseResponse response = new LogonRepeatResponse();
+        //BaseResponse response = new LogonRepeatResponse();
 
-        return SingleMessage(response.Build());
+        //return SingleMessage(response.Build());
+
+        var responses = new List<FragmentMessage> { };
+        return new ValueTask<ICollection<FragmentMessage>>(responses);
     }
 }
